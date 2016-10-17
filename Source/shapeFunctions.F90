@@ -22,14 +22,14 @@
 
                 ! Gaussian quadrature order 2
 
-                xi(1,2) = -1./dsqrt(3.0)
+                xi(1,2) = -1./dsqrt(3.0d0)
                 xi(2,2) = -xi(1,2)
                 w(1,2)  = 1.0
                 w(2,2)  = w(1,2)
 
                 ! Gaussian quadrature order 3
 
-                xi(1,3) = -dsqrt(3.0/5.0)
+                xi(1,3) = -dsqrt(3.0d0/5.0d0)
                 xi(2,3) = 0.0
                 xi(3,3) = -xi(1,3)
                 w(1,3)  = 5.0/9.0
@@ -57,7 +57,7 @@
             !! @param n         number of element nodes
             !! @param psi       shape function values
             !! @param dpsi      derivatives shape functions values
-            subroutine shapef(xl,n,psi,dpsi)
+            subroutine shpf1d(xl,n,psi,dpsi)
 
             !... Calculates the values of the shape functions psi and
             !... their derivatives dpsi with respect to the master
@@ -67,10 +67,14 @@
                 integer  ::  n
                 real*8   ::  xl, psi(n), dpsi(n)
 
+                ! Testing shape function order
                 if (n .lt. 2 .or. n .gt. 4) then
                     write(*,*) "Error in call to shape", n
                     stop
                 endif
+
+                ! Clear
+                psi = 0.d0; dpsi = 0.d0
 
                 ! Linear shape functions
                 if (n .eq. 2) then
