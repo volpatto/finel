@@ -1,7 +1,11 @@
+        
+        !> Module for shape functions computations and relate
+        !! operations.
         module mshapeFunctions
             
             implicit none
-
+            
+            !> Gauss point integration and weights
             real*8  ::  xi(4,4), w(4,4)
 
             contains
@@ -52,7 +56,7 @@
 !****************************************************************************************
             
             !> Calculates the values of the shape functions and their
-            !> derivatives.
+            !! derivatives.
             !! @param xl        specified value of master element coord
             !! @param n         number of element nodes
             !! @param psi       shape function values

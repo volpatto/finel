@@ -1,3 +1,4 @@
+        !> Module for auxiliar routines.
         module mUtilities
 
             implicit none
@@ -7,11 +8,11 @@
 !*************************************************************************************
 
                 !> Generate points between x1 and x2 equally spaced in
-                !> x(i). Same idea of numpy subroutine.
-                ! @param x1         interval lower bound
-                ! @param x2         interval upper bound
-                ! @param nintv      num of intervals
-                ! @param x          vector to assemble the values
+                !! x(i). Same idea of numpy subroutine.
+                !! @param x1         interval lower bound
+                !! @param x2         interval upper bound
+                !! @param nintv      num of intervals
+                !! @param x          vector to assemble the values
                 subroutine linspace(x1, x2, nintv, x)
 
                     implicit none
