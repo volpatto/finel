@@ -36,15 +36,15 @@
 
                     ! Begin integration loop
                     do l=1,ni
-                        x = x1+(1.d0+xi(l))*dx
-                        call shpf1d(xi(l),n,psi,dpsi)
+                        x = x1+(1.d0+xi(l,ni))*dx
+                        call shpf1d(xi(l,ni),n,psi,dpsi)
                         do i=1,n
-                            eright(i) = eright(i)+psi(i)*xf*w(l)*dx
+                            eright(i) = eright(i)+psi(i)*xf*w(l,ni)*dx
                             do j=1,n
                                eleft(i,j) = eleft(i,j) + & 
                                    (xk*dpsi(i)*dpsi(j)/dx/dx + &
                                    xc*psi(i)*dpsi(j)/dx + &
-                                   xb*psi(i)*psi(j))*w(l)*dx
+                                   xb*psi(i)*psi(j))*w(l,ni)*dx
                             enddo
                         enddo
                     enddo
