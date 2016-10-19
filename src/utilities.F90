@@ -1,4 +1,5 @@
         !> Module for auxiliar routines.
+        !! @author Diego T. Volpatto
         module mUtilities
 
             implicit none

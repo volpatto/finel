@@ -1,12 +1,14 @@
         
         !> Module for shape functions computations and relate
         !! operations.
+        !! @author Diego T. Volpatto
         module mshapeFunctions
             
             implicit none
             
-            !> Gauss point integration and weights
-            real*8  ::  xi(4,4), w(4,4)
+            
+            real*8  ::  xi(4,4), &  !< Gauss point integration
+                        w(4,4)      !< Gauss weights
 
             contains
             
@@ -57,10 +59,10 @@
             
             !> Calculates the values of the shape functions and their
             !! derivatives.
-            !! @param xl        specified value of master element coord
-            !! @param n         number of element nodes
-            !! @param psi       shape function values
-            !! @param dpsi      derivatives shape functions values
+            !! @param xl        [in] specified value of master element coord
+            !! @param n         [in] number of element nodes
+            !! @param psi       [out] shape function values
+            !! @param dpsi      [out] derivatives shape functions values
             subroutine shpf1d(xl,n,psi,dpsi)
 
             !... Calculates the values of the shape functions psi and
