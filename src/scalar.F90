@@ -22,17 +22,19 @@
                     real*8 :: x1, x2
                     integer :: n, ni, mat
 
-                    real*8 :: psi(n), dpsi(n), x, dx, xf
+                    real*8 :: psi(n), dpsi(n), x, dx
                     real*8 :: eleft(n,n), eright(n)
-                    real*8 :: xk, xb, xc
+                    real*8 :: xk, xb, xc, xf
                     integer :: i, j, l
 
                     xk = 1.d0; xb = 1.d0; xc = 0.d0
+                    xf = 0.0
 
                     dx = (x2-x1)/2.d0
 
                     ! Initialize element arrays
                     eleft = 0.0d0; eright = 0.d0
+                    psi = 0.0d0; dpsi = 0.d0
 
                     ! Begin integration loop
                     do l=1,ni
@@ -45,7 +47,9 @@
                                    (xk*dpsi(i)*dpsi(j)/dx/dx + &
                                    xc*psi(i)*dpsi(j)/dx + &
                                    xb*psi(i)*psi(j))*w(l,ni)*dx
+                                write(*,*) "i =", i,"j =",j, "eleft =",eleft(i,j)
                             enddo
+                            write(*,*) "i =", i, "eright =", eright(i)
                         enddo
                     enddo
 

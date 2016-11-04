@@ -1,4 +1,3 @@
-        
         !> Module for shape functions computations and relate
         !! operations.
         !! @author Diego T. Volpatto
