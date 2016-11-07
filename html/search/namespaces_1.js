@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['scalarstruture',['scalarstruture',['../namespacescalarstruture.html',1,'']]]
+  ['scalarstructure',['scalarstructure',['../namespacescalarstructure.html',1,'']]]
 ];

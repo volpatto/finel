@@ -82,6 +82,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a8664a8169ba41e908d3b6989d5d6bb2a"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemutilities.html#a8664a8169ba41e908d3b6989d5d6bb2a">test_shpf1d</a> (n, nelem, x)</td></tr>
 <tr class="memdesc:a8664a8169ba41e908d3b6989d5d6bb2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if shpf1d works properly.  <a href="#a8664a8169ba41e908d3b6989d5d6bb2a">More...</a><br /></td></tr>
 <tr class="separator:a8664a8169ba41e908d3b6989d5d6bb2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af470b375ded287ebcdf24adadc9c75d9"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemutilities.html#af470b375ded287ebcdf24adadc9c75d9">print_matrix</a> (A, n, m)</td></tr>
+<tr class="memdesc:af470b375ded287ebcdf24adadc9c75d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints in the screen a matrix A(n,m)  <a href="#af470b375ded287ebcdf24adadc9c75d9">More...</a><br /></td></tr>
+<tr class="separator:af470b375ded287ebcdf24adadc9c75d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Module for auxiliar routines. </p>
@@ -169,12 +172,59 @@ Here is the caller graph for this function:</div>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="af470b375ded287ebcdf24adadc9c75d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af470b375ded287ebcdf24adadc9c75d9">&sect;&nbsp;</a></span>print_matrix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine mutilities::print_matrix </td>
+          <td>(</td>
+          <td class="paramtype">real*8, dimension(n,m)&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>n</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>m</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Prints in the screen a matrix A(n,m) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">A</td><td>A matrix </td></tr>
+    <tr><td class="paramname">n</td><td>Number of lines of A </td></tr>
+    <tr><td class="paramname">m</td><td>Number of colunms of A </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Diego Volpatto </dd></dl>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="namespacemutilities_ab455147634871201a9ee80daa13bf732_icgraph.png" border="0" usemap="#namespacemutilities_ab455147634871201a9ee80daa13bf732_icgraph" alt=""/></div>
-<map name="namespacemutilities_ab455147634871201a9ee80daa13bf732_icgraph" id="namespacemutilities_ab455147634871201a9ee80daa13bf732_icgraph">
-<area shape="rect" id="node2" href="driver_8_f90.html#a6e3eeecf143064d98b191797e5da2c06" title="A FIN ELement program for general purpose problems. The present is based in the book &quot;Finite Elements..." alt="" coords="184,5,231,32"/>
+<div class="center"><img src="namespacemutilities_af470b375ded287ebcdf24adadc9c75d9_icgraph.png" border="0" usemap="#namespacemutilities_af470b375ded287ebcdf24adadc9c75d9_icgraph" alt=""/></div>
+<map name="namespacemutilities_af470b375ded287ebcdf24adadc9c75d9_icgraph" id="namespacemutilities_af470b375ded287ebcdf24adadc9c75d9_icgraph">
+<area shape="rect" id="node2" href="namespacescalarstructure.html#aaa2b5bf4d343d7dfb7f6eb684eaf6b60" title="Routine to allocate and clear the Ku = F system. " alt="" coords="204,5,403,32"/>
+<area shape="rect" id="node4" href="namespacescalarstructure.html#aa6ed456644b9cece32442b984802ec00" title="Routine to allocate and clear the element KF. " alt="" coords="207,56,400,83"/>
+<area shape="rect" id="node3" href="driver_8_f90.html#a6e3eeecf143064d98b191797e5da2c06" title="A FINite ELement program for general purpose problems. The present is based in the book &quot;Finite Eleme..." alt="" coords="451,31,497,57"/>
 </map>
 </div>
 
@@ -279,14 +329,6 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="namespacemutilities_a8664a8169ba41e908d3b6989d5d6bb2a_cgraph.png" border="0" usemap="#namespacemutilities_a8664a8169ba41e908d3b6989d5d6bb2a_cgraph" alt=""/></div>
 <map name="namespacemutilities_a8664a8169ba41e908d3b6989d5d6bb2a_cgraph" id="namespacemutilities_a8664a8169ba41e908d3b6989d5d6bb2a_cgraph">
 <area shape="rect" id="node2" href="namespacemshapefunctions.html#a754cca7158b7b27b2f37403c7452c551" title="Calculates the values of the shape functions and their derivatives. " alt="" coords="204,5,372,32"/>
-</map>
-</div>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="namespacemutilities_a8664a8169ba41e908d3b6989d5d6bb2a_icgraph.png" border="0" usemap="#namespacemutilities_a8664a8169ba41e908d3b6989d5d6bb2a_icgraph" alt=""/></div>
-<map name="namespacemutilities_a8664a8169ba41e908d3b6989d5d6bb2a_icgraph" id="namespacemutilities_a8664a8169ba41e908d3b6989d5d6bb2a_icgraph">
-<area shape="rect" id="node2" href="driver_8_f90.html#a6e3eeecf143064d98b191797e5da2c06" title="A FIN ELement program for general purpose problems. The present is based in the book &quot;Finite Elements..." alt="" coords="204,5,251,32"/>
 </map>
 </div>
 

@@ -15,25 +15,25 @@
 
           use mUtilities
           use msetup
-          use meshStruture
-          use mshapeFunctions,  only: setint, xi, w
-          use mscalar, only: localElem 
+          use meshStructure
+          use scalarStructure
+          use mprocessor
+          use mIO
+          use mscalar 
 
           implicit none
 
-          real*8, allocatable :: xeps(:)
-          real*8 :: pi
-          integer :: nelem
           type(mesh) :: malha
+          type(scalarStructureSystem) :: potencial
 
-          !nelem = 20
-
-          !pi = 4.d0*datan(1.d0)
-          !call linspace(-1.0d0, 1.0d0, nelem, xeps)
-          !call test_shpf1d(4,nelem,xeps)
-          !call setint
-          !call localElem(0.d0,1.d0,2,4,1)
-          !call quad1(4, 0.d0, 5.d0)
+          call openFiles
+          call setupPhase(malha, potencial)
           call read_nodes(malha)
+          call read_elems(malha)
+          call mallocGlobalKF(potencial, malha%nnodes)
+          call mallocElemKF(potencial, malha%nen)
+          call processor(malha, potencial)
+          call print_sol1D(malha, potencial)
+          call closeFiles
 
         end program

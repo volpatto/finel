@@ -102,4 +102,28 @@
 
                 end subroutine
 
+!*************************************************************************************
+
+                !> Prints in the screen a matrix A(n,m)
+                !! @param A     A matrix
+                !! @param n     Number of lines of A
+                !! @param m     Number of colunms of A
+                !! @author      Diego Volpatto
+                subroutine print_matrix(A, n, m)
+
+                    implicit none
+
+                    integer :: n, m
+                    real*8 :: A(n,m)
+
+                    integer :: i, j
+
+                    do i=1,n
+                    do j=1,m
+                    write(*,*) i, j, A(i,j)
+                    enddo
+                    enddo
+
+                endsubroutine
+
         end module

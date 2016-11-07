@@ -70,16 +70,16 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
-<tr class="memitem:a0f2b2f9c060caaeeae1706504f71b349"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemscalar.html#a0f2b2f9c060caaeeae1706504f71b349">localelem</a> (x1, x2, n, ni, mat)</td></tr>
-<tr class="memdesc:a0f2b2f9c060caaeeae1706504f71b349"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes a master element contribution.  <a href="#a0f2b2f9c060caaeeae1706504f71b349">More...</a><br /></td></tr>
-<tr class="separator:a0f2b2f9c060caaeeae1706504f71b349"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3824c0240268267041ee36557cb078b6"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemscalar.html#a3824c0240268267041ee36557cb078b6">localelem</a> (mesh_, scalar_, nel)</td></tr>
+<tr class="memdesc:a3824c0240268267041ee36557cb078b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes a master element contribution &ndash; 1D.  <a href="#a3824c0240268267041ee36557cb078b6">More...</a><br /></td></tr>
+<tr class="separator:a3824c0240268267041ee36557cb078b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Contains variables and subroutine related to a general scalar problem. </p>
 <dl class="section author"><dt>Author</dt><dd>Diego T. Volpatto </dd></dl>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
-<a id="a0f2b2f9c060caaeeae1706504f71b349"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0f2b2f9c060caaeeae1706504f71b349">&sect;&nbsp;</a></span>localelem()</h2>
+<a id="a3824c0240268267041ee36557cb078b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3824c0240268267041ee36557cb078b6">&sect;&nbsp;</a></span>localelem()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -87,32 +87,20 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="memname">subroutine mscalar::localelem </td>
           <td>(</td>
-          <td class="paramtype">real*8&#160;</td>
-          <td class="paramname"><em>x1</em>, </td>
+          <td class="paramtype">type(mesh)&#160;</td>
+          <td class="paramname"><em>mesh_</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">real*8&#160;</td>
-          <td class="paramname"><em>x2</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer&#160;</td>
-          <td class="paramname"><em>n</em>, </td>
+          <td class="paramtype">type(scalarstructuresystem)&#160;</td>
+          <td class="paramname"><em>scalar_</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">integer&#160;</td>
-          <td class="paramname"><em>ni</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer&#160;</td>
-          <td class="paramname"><em>mat</em>&#160;</td>
+          <td class="paramname"><em>nel</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -122,23 +110,31 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Computes a master element contribution. </p>
+<p>Computes a master element contribution &ndash; 1D. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">x1</td><td>Lower bound coordinate of element </td></tr>
-    <tr><td class="paramname">x2</td><td>Upper bound coordinate of element </td></tr>
-    <tr><td class="paramname">n</td><td>Nodal points number of element </td></tr>
-    <tr><td class="paramname">ni</td><td>Order of integration rule </td></tr>
-    <tr><td class="paramname">mat</td><td>Material number </td></tr>
+    <tr><td class="paramname">mesh_</td><td>[in/out] A mesh structure </td></tr>
+    <tr><td class="paramname">scalar_</td><td>[in/out] A scalar structure </td></tr>
+    <tr><td class="paramname">nel</td><td>[in] Index of current element </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section author"><dt>Author</dt><dd>Diego Volpatto </dd></dl>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="namespacemscalar_a0f2b2f9c060caaeeae1706504f71b349_cgraph.png" border="0" usemap="#namespacemscalar_a0f2b2f9c060caaeeae1706504f71b349_cgraph" alt=""/></div>
-<map name="namespacemscalar_a0f2b2f9c060caaeeae1706504f71b349_cgraph" id="namespacemscalar_a0f2b2f9c060caaeeae1706504f71b349_cgraph">
+<div class="center"><img src="namespacemscalar_a3824c0240268267041ee36557cb078b6_cgraph.png" border="0" usemap="#namespacemscalar_a3824c0240268267041ee36557cb078b6_cgraph" alt=""/></div>
+<map name="namespacemscalar_a3824c0240268267041ee36557cb078b6_cgraph" id="namespacemscalar_a3824c0240268267041ee36557cb078b6_cgraph">
 <area shape="rect" id="node2" href="namespacemshapefunctions.html#a754cca7158b7b27b2f37403c7452c551" title="Calculates the values of the shape functions and their derivatives. " alt="" coords="184,5,352,32"/>
+</map>
+</div>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="namespacemscalar_a3824c0240268267041ee36557cb078b6_icgraph.png" border="0" usemap="#namespacemscalar_a3824c0240268267041ee36557cb078b6_icgraph" alt=""/></div>
+<map name="namespacemscalar_a3824c0240268267041ee36557cb078b6_icgraph" id="namespacemscalar_a3824c0240268267041ee36557cb078b6_icgraph">
+<area shape="rect" id="node2" href="namespacemprocessor.html#a60bf5c4c22733be532d8957a3b4f95f0" title="Form and assemble Ku = F system. " alt="" coords="184,5,319,32"/>
+<area shape="rect" id="node3" href="driver_8_f90.html#a6e3eeecf143064d98b191797e5da2c06" title="A FINite ELement program for general purpose problems. The present is based in the book &quot;Finite Eleme..." alt="" coords="367,5,413,32"/>
 </map>
 </div>
 
