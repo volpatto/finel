@@ -54,7 +54,8 @@
                     do l=1,mesh_%nintp
                         xl = x1+(1.d0+xi(l,mesh_%nintp))*dx
                         !print*, xl
-                        xf = dsin(pi*xl)*dcos(pi*xl)
+                        !xf = dsin(pi*xl)*dcos(pi*xl)
+                        xf = 6.0d0*xl
                         call shpf1d(xi(l,mesh_%nintp),mesh_%nen,psi,dpsi)
                         do i=1,mesh_%nen
                             scalar_%rhelem(i) = scalar_%rhelem(i)+ &
