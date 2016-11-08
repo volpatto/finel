@@ -29,8 +29,10 @@
                     real*8 :: psi(mesh_%nen), dpsi(mesh_%nen), xl, dx
                     !real*8 :: eleft(n,n), eright(n)
                     real*8 :: x1, x2
-                    real*8 :: xk, xb, xc, xf
+                    real*8 :: xk, xb, xc, xf, pi
                     integer :: i, j, l, i1, i2
+
+                    pi = 4.0d0*datan(1.0d0) 
 
                     xk = scalar_%mat(mesh_%mat(nel),1); !print*, xk
                     xb = scalar_%mat(mesh_%mat(nel),2); !print*, xb
@@ -52,7 +54,7 @@
                     do l=1,mesh_%nintp
                         xl = x1+(1.d0+xi(l,mesh_%nintp))*dx
                         !print*, xl
-                        xf = 6.0d0*xl
+                        xf = dsin(pi*xl)*dcos(pi*xl)
                         call shpf1d(xi(l,mesh_%nintp),mesh_%nen,psi,dpsi)
                         do i=1,mesh_%nen
                             scalar_%rhelem(i) = scalar_%rhelem(i)+ &
