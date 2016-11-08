@@ -27,11 +27,7 @@
           type(scalarStructureSystem) :: potencial
 
           call openFiles
-          call setupPhase(malha, potencial)
-          call read_nodes(malha)
-          call read_elems(malha)
-          call mallocGlobalKF(potencial, malha%nnodes)
-          call mallocElemKF(potencial, malha%nen)
+          call preprocessor(malha, potencial)
           call processor(malha, potencial)
           call print_sol1D(malha, potencial)
           call closeFiles

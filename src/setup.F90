@@ -68,4 +68,27 @@
 
             endsubroutine
 
+            !> Realizes preprocessor routines.
+            !! @param mesh_     A mesh structure
+            !! @param scalar_   A scalar structure
+            !! @author Diego T. Volpatto
+            subroutine preprocessor(mesh_, scalar_)
+
+                use meshStructure
+                use scalarStructure
+                use mIO
+
+                implicit none
+
+                type(mesh) :: mesh_
+                type(scalarStructureSystem) :: scalar_
+
+                call setupPhase(mesh_,scalar_)
+                call read_nodes(mesh_)
+                call read_elems(mesh_)
+                call mallocGlobalKF(scalar_, mesh_%nnodes)
+                call mallocElemKF(scalar_, mesh_%nen)
+
+            endsubroutine
+
         endmodule
