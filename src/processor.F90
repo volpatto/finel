@@ -14,7 +14,7 @@
 
                 use meshStructure
                 use scalarStructure
-                use mscalar,    only: localElem 
+                use mscalar,    only: localElem, localElem2D
 
                 implicit none
 
@@ -24,7 +24,11 @@
 
                 do nel = 1,mesh_%nelems
 
+                    if (mesh_%nsd==1) then
                     call localElem(mesh_, scalar_, nel)
+                    else
+                    call localElem2D(mesh_, scalar_, nel)
+                    endif
                     call assmb(mesh_, scalar_, nel)
 
                 enddo
@@ -103,7 +107,7 @@
                 enddo
 
                 scalar_%lhsys(n,n) = 1.0d0
-                scalar_%rhsys(n) = val 
+                scalar_%rhsys(n) = val
 
             endsubroutine
 
@@ -187,14 +191,15 @@
 
                 use meshStructure
                 use scalarStructure
-                use mshapeFunctions, only: setint
+                use mshapeFunctions, only: setint, setint2
 
                 implicit none
 
                 type(mesh) :: mesh_
                 type(scalarStructureSystem) :: scalar_
 
-                call setint
+                if (mesh_%nsd==1) call setint
+                if (mesh_%nsd==2) call setint2
                 call formKF(mesh_, scalar_)
                 call applybc(mesh_, scalar_)
                 call solver(mesh_, scalar_)

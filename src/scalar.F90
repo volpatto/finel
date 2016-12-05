@@ -41,8 +41,8 @@
 
                     i1 = mesh_%gnode(nel,1)+1; !print*, i1
                     i2 = mesh_%gnode(nel,2)+1; !print*, i2
-                    x1 = mesh_%x(i1); !print*, "x1=", x1
-                    x2 = mesh_%x(i2); !print*,"x2=", x2
+                    x1 = mesh_%x(1,i1); !print*, "x1=", x1
+                    x2 = mesh_%x(1,i2); !print*,"x2=", x2
 
                     dx = (x2-x1)/2.d0; !print*, "dx =", dx
 
@@ -81,7 +81,7 @@
                 !! @author Diego Volpatto
                 subroutine localElem2D(mesh_, scalar_, nel)
 
-                    use mshapeFunctions, only: xi, w, shpf1d
+                    use mshapeFunctions, only: xit, xiq, wt, wq, shpf2d
                     use meshStructure
                     use scalarStructure
 
@@ -92,27 +92,45 @@
                     type(scalarStructureSystem) :: scalar_
                     integer :: nel
 
-                    real*8 :: psi(mesh_%nen), dpsi(mesh_%nen), xl, dx
+                    real*8 :: psi(mesh_%nen), dpsi(mesh_%nsd,mesh_%nen)
                     real*8 :: dxds(2,2), dsdx(2,2), detJ, fac
                     real*8 :: dpsix(mesh_%nen), dpsiy(mesh_%nen)
+                    real*8, allocatable :: xi(:,:), w(:)
                     !real*8 :: eleft(n,n), eright(n)
-                    real*8 :: x1, x2
+                    real*8 :: xl(mesh_%nsd)
                     real*8 :: xk, xb, xc, xf, pi
-                    integer :: i, j, l, i1, i2, k
+                    integer :: i, j, l, k
+                    integer :: inodes(mesh_%nen)
+                    real*8 :: xnodes(mesh_%nsd,mesh_%nen)
 
-                    pi = 4.0d0*datan(1.0d0) 
+                    pi = 4.0d0*datan(1.0d0)
+
+                    ! Setting global nodes vector to local
+                    inodes=mesh_%gnode(nel,:)+1; !print*, inodes;
+                    do i=1,mesh_%nsd
+                    do j=1,mesh_%nen
+                    xnodes(i,j) = mesh_%x(i,inodes(j))
+                    enddo
+                    enddo
+
+                    ! Setting quadrature points and weights due to
+                    ! element geometry
+                    if (mesh_%nen==3 .or. mesh_%nen==6) then 
+                        allocate(xi(2,4)); xi=xit; 
+                        allocate(w(4)); w=wt; 
+                    endif
+                    if (mesh_%nen==4 .or. mesh_%nen==8 .or.mesh_%nen==9) then 
+                        allocate(xi(2,9)); xi=xiq; 
+                        allocate(w(9)); w=wq; 
+                    endif
 
                     xk = scalar_%mat(mesh_%mat(nel),1); !print*, xk
+                    xk = 1.0d0
                     xb = scalar_%mat(mesh_%mat(nel),2); !print*, xb
+                    xb = 0.0d0
                     xc = scalar_%mat(mesh_%mat(nel),3); !print*, xc
+                    xc = 0.0d0
                     xf = 0.0
-
-                    i1 = mesh_%gnode(nel,1)+1; !print*, i1
-                    i2 = mesh_%gnode(nel,2)+1; !print*, i2
-                    x1 = mesh_%x(i1); !print*, "x1=", x1
-                    x2 = mesh_%x(i2); !print*,"x2=", x2
-
-                    !dx = (x2-x1)/2.d0; !print*, "dx =", dx
 
                     ! Initialize element arrays
                     scalar_%lhelem = 0.0d0; scalar_%rhelem = 0.d0
@@ -120,17 +138,19 @@
 
                     ! Begin integration loop
                     do l=1,mesh_%nintp
-                        xl = x1+(1.d0+xi(l,mesh_%nintp))*dx
-                        !print*, xl
-                        !xf = dsin(pi*xl)*dcos(pi*xl)
-                        xf = 6.0d0*xl
-                        call shpf1d(xi(l,mesh_%nintp),mesh_%nen,psi,dpsi)
+                        ! Gauss point to integrate source/sink term
+                        do i=1,mesh_%nsd
+                        xl(i)=xi(i,l)
+                        enddo
+                        !xf=dsin(pi*mesh_%xV(nel))*dsin(pi*mesh_%yV(nel))
+                        !xf = 1.0d0
+                        call shpf2d(xi(mesh_%nsd,l),mesh_%nen,psi,dpsi)
                         ! Calculate DXDS
                         do i=1,2
                         do j=1,2
                         dxds(i,j) = 0.0d0
                         do k=1,mesh_%nen
-                            dxds(i,j) = dxds(i,j)+dpsi(k,j)*x(i,k)
+                            dxds(i,j) = dxds(i,j)+dpsi(j,k)*xnodes(i,k)
                         enddo
                         enddo
                         enddo
@@ -145,16 +165,19 @@
                         dsdx(2,1)=-dxds(2,1)/detJ
                         ! Calculate d(psi)/dx
                         do i=1,mesh_%nen
-                        dpsix(i)=dpsi(i,1)*dsdx(1,1)+dpsi(i,2)*dsdx(2,1)
-                        dpsiy(i)=dpsi(i,1)*dsdx(1,2)+dpsi(i,2)*dsdx(2,2)
+                        dpsix(i)=dpsi(1,i)*dsdx(1,1)+dpsi(2,i)*dsdx(2,1)
+                        dpsiy(i)=dpsi(1,i)*dsdx(1,2)+dpsi(2,i)*dsdx(2,2)
                         enddo
                         ! Accumulate integration point values of integrals
                         fac=detJ*w(l)
+                        !xf=dsin(pi*mesh_%xV(nel))*dsin(pi*mesh_%yV(nel))
+                        xf=1.d0
+                        !xf=mesh_%xV(nel)
                         do i=1,mesh_%nen
-                        scalar_%eright(i)=scalar_%eright(i)+ &
+                        scalar_%rhelem(i)=scalar_%rhelem(i)+ &
                                         xf*psi(i)*fac
                         do j=i,mesh_%nen
-                        scalar_%eleft(i,j)=scalar_%eleft(i,j)+ &
+                        scalar_%lhelem(i,j)=scalar_%lhelem(i,j)+ &
                            fac*(xk*(dpsix(i)*dpsix(j)+dpsiy(i)*dpsiy(j))+&
                            xb*psi(i)*psi(j))
                         enddo
@@ -163,10 +186,10 @@
                     ! Calculate lower symmetric part of EK
                     do i=1,mesh_%nen
                     do j=1,i
-                    scalar_%eright(i,j) = scalar_%eright(j,i)
+                    scalar_%lhelem(i,j) = scalar_%lhelem(j,i)
                     enddo
                     enddo
-
+                deallocate(xi); deallocate(w)
                 end subroutine
 
         end module

@@ -12,8 +12,7 @@
                 integer :: nnodes !< Number of nodes
                 integer :: nelems !< Number of elements
                 integer :: nen !< Number of element's nodes
-                real*8, allocatable :: x(:), & !< x coordinates nodes
-                                    y(:) !< y coordinates nodes
+                real*8, allocatable :: x(:,:) !< nodes coordinates
                 integer*4, allocatable :: flagnode(:) !< boundary flag
 
                 integer :: nelem !< Number of elements
@@ -37,15 +36,16 @@
                 !! @param meshStrct     [in/out] mesh structure to allocate
                 !! @param n     [in] number of nodes
                 !! @author Diego T. Volpatto
-                subroutine mallocNodes(meshStrct, n)
+                subroutine mallocNodes(meshStrct)
 
                     implicit none
 
                     type(mesh) :: meshStrct
-                    integer :: n 
+                    integer :: n
 
-                    allocate(meshStrct%x(n+1)); meshStrct%x = 0.0d0
-                    allocate(meshStrct%y(n+1)); meshStrct%y = 0.0d0
+                    n = meshStrct%nnodes
+
+                    allocate(meshStrct%x(2,n+1)); meshStrct%x = 0.0d0
                     allocate(meshStrct%flagnode(n+1)); meshStrct%flagnode = 0
 
                 endsubroutine
@@ -56,12 +56,14 @@
                 !! @param meshStrct     [in/out] mesh structure to allocate
                 !! @param n    [in] number of elements
                 !! @author Diego T. Volpatto
-                subroutine mallocElem(meshStrct, n)
+                subroutine mallocElem(meshStrct)
 
                     implicit none
 
                     type(mesh) :: meshStrct
                     integer :: n 
+
+                    n = meshStrct%nelems
 
                     allocate(meshStrct%gnode(n+1,3)); meshStrct%gnode = 0
                     allocate(meshStrct%ei(n+1)); meshStrct%ei = 0

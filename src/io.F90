@@ -1,17 +1,31 @@
-        module mIO
+      !> Contains input/output variables and routines.
+      !! @author    Diego T. Volpatto
+      module mIO
 
             implicit none
 
-            integer, parameter  :: iin = 111 !< Input file id
-            integer, parameter  :: iout = 112 !< Output file id
-            integer, parameter  :: isol = 113 !< Solution file id
+            integer, parameter  :: iin = 1110 !< Input file id
+            integer, parameter  :: iout = 1120 !< Output file id
+            integer, parameter  :: isol = 1130 !< Solution file id
+            integer, parameter  :: ioutn = 1140 !< Node output file
+            integer, parameter  :: ioute = 1150 !< Element output file 
+            integer, parameter  :: isolcsv = 1160 !< Solution csv file id
+            integer, parameter  :: isolvtk = 1170 !< Solution vtk file id
 
             !> Input file name
             character(len=20), parameter :: inFile='input.dat'
             !> Output file name
             character(len=20), parameter :: outFile='output.dat'
+            !> Output node's file name
+            character(len=20), parameter :: outNodes='outnodes.dat'
+            !> Output elements' file name
+            character(len=20), parameter :: outElem='outelem.dat'
             !> Solution file name
             character(len=20), parameter :: solFile='solution.dat'
+            !> Solution file name csv file
+            character(len=20), parameter :: solFileCSV='solution.csv'
+            !> Solution file name vtk file
+            character(len=20), parameter :: solFileVTK='solution.vtk'
 
             character(len=50) :: title
 
@@ -26,6 +40,8 @@
                 open(unit=iin,file=inFile)
                 open(unit=iout,file=outFile)
                 open(unit=isol,file=solFile)
+                open(unit=ioutn,file=outNodes)
+                open(unit=ioute,file=outElem)
 
             endsubroutine
 
@@ -38,6 +54,8 @@
                 close(iin)
                 close(iout)
                 close(isol)
+                close(ioutn)
+                close(ioute)
 
             endsubroutine
 
@@ -54,15 +72,15 @@
                 integer             :: i
                 character*8         :: node
 
-                open(unit=100, file='case1.n')
+                open(unit=100, file='lshp.n')
                 read(100,*) mesh_%nnodes
                 !print*, mesh_%nnodes
 
-                call mallocNodes(mesh_, mesh_%nnodes)
+                call mallocNodes(mesh_)
 
                 do i=1,mesh_%nnodes
-                    read(100,*) node, mesh_%x(i), mesh_%y(i), mesh_%flagnode(i)
-                    !print*, node, mesh_%x(i), mesh_%y(i), mesh_%flagnode(i)
+                    read(100,*) node, mesh_%x(1,i), mesh_%x(2,i), mesh_%flagnode(i)
+                    write(ioutn,*) i, mesh_%x(1,i), mesh_%x(2,i), mesh_%flagnode(i)
                 enddo
 
                 close(100)
@@ -82,11 +100,11 @@
                 integer             :: i
                 character*8         :: elem
 
-                open(unit=100, file='case1.e')
+                open(unit=100, file='lshp.e')
                 read(100,*) mesh_%nelems
                 !print*, mesh_%nelems
 
-                call mallocElem(mesh_, mesh_%nelems)
+                call mallocElem(mesh_)
 
                 do i=1,mesh_%nelems
                     read(100,*) elem, & 
@@ -94,16 +112,20 @@
                         mesh_%ei(i), mesh_%ej(i), mesh_%ek(i), & 
                         mesh_%si(i), mesh_%sj(i), mesh_%sk(i), &
                         mesh_%xV(i), mesh_%yV(i), mesh_%mat(i)
-                    !print*, elem, & 
-                        !mesh_%gnode(i,1), mesh_%gnode(i,2), mesh_%gnode(i,3), &
-                    !mesh_%xV(i), mesh_%yV(i), mesh_%mat(i)
+                    write(ioute,*) i, & 
+                        mesh_%gnode(i,1), mesh_%gnode(i,2), mesh_%gnode(i,3), &
+                    mesh_%xV(i), mesh_%yV(i), mesh_%mat(i)
                 enddo
 
                 close(100)
 
             endsubroutine
 
-            subroutine print_sol1D(mesh_, scalar_)
+            !> Prints the solution of scalar field.
+            !! @param mesh_     A mesh structure
+            !! @param scalar_   A scalar structure
+            !! @author  Diego T. Volpatto
+            subroutine print_sol(mesh_, scalar_)
 
                 use meshStructure
                 use scalarStructure
@@ -113,12 +135,129 @@
                 type(mesh) :: mesh_
                 type(scalarStructureSystem) :: scalar_
 
-                integer :: i
+                integer :: i, j
 
                 do i=1,mesh_%nnodes
-                write(isol,*) i, mesh_%x(i), scalar_%u(i)
+                !write(isol,*) i, mesh_%x(1,i), scalar_%u(i)
+                write(isol,*) i, (mesh_%x(j,i), j=1,mesh_%nsd), scalar_%u(i)
                 enddo
 
             endsubroutine
 
+            !> Prints the solution of scalar field in the csv format
+            !! aiming to compatibility with Paraview post-processing.
+            !! @param mesh_     A mesh structure
+            !! @param scalar_   A scalar structure
+            !! @author  Diego T. Volpatto
+            subroutine print_sol_csv(mesh_, scalar_)
+
+                use meshStructure
+                use scalarStructure
+
+                implicit none
+
+                type(mesh) :: mesh_
+                type(scalarStructureSystem) :: scalar_
+
+                integer :: i, j
+                character(len=50) :: xx, yy, zz, scalarField
+                character(len=5) :: ii
+
+                open(unit=isolcsv,file=solFileCSV)
+
+                write(isolcsv,*) "xcoord, ycoord, zcoord, scalar"
+                do i=1,mesh_%nnodes
+                !write(ii,'(i0)') i
+                !ii = trim(ii)//', '
+                write(xx,'(f0.20)') mesh_%x(1,i)
+                xx = trim(xx)//', '
+                if (mesh_%nsd .gt. 1) then
+                    write(yy,'(f0.20)') mesh_%x(2,i)
+                    yy = trim(yy)//', '
+                    write(zz,'(f0.20)') 0.0
+                    zz = trim(zz)//', '
+                else
+                    write(yy,'(f0.20)') 0.0
+                    yy = trim(yy)//', '
+                    write(zz,'(f0.20)') 0.0
+                    zz = trim(zz)//', '
+                endif
+                write(scalarField,'(f0.20)') scalar_%u(i)
+                scalarField = trim(scalarField)
+                !write(isol,*) i, mesh_%x(1,i), scalar_%u(i)
+                !write(isolprv,*) i, (mesh_%x(j,i), j=1,mesh_%nsd), scalar_%u(i)
+                write(isolcsv,*) xx, yy, zz, scalarField
+                !stop
+                enddo
+
+                close(isolcsv)
+
+            endsubroutine
+
+            !> Prints the solution of scalar field in the vtk "legacy" format
+            !! aiming to compatibility with Paraview post-processing.
+            !! @param mesh_     A mesh structure
+            !! @param scalar_   A scalar structure
+            !! @author  Diego T. Volpatto
+            subroutine print_sol_vtk(mesh_, scalar_)
+
+                use meshStructure
+                use scalarStructure
+
+                implicit none
+
+                type(mesh) :: mesh_
+                type(scalarStructureSystem) :: scalar_
+
+                integer :: i, j
+                character(len=50) :: xx, yy, zz, scalarField, tempstr
+                character(len=50) :: tempstr2
+                character(len=5) :: ii
+                integer :: inodes(mesh_%nen)
+
+                open(unit=isolvtk,file=solFileVTK)
+
+                write(isolvtk,'(a)') "# vtk DataFile Version 3.0"
+                write(isolvtk,'(a)') "2D scalar data"
+                write(isolvtk,'(a)') "ASCII"
+                write(isolvtk,*) 
+                write(isolvtk,'(a)') "DATASET UNSTRUCTURED_GRID" 
+                write(tempstr,'(i0)') mesh_%nnodes
+                write(isolvtk,'(a)') "POINTS "//trim(tempstr)//" float" 
+                do i=1,mesh_%nnodes
+                if (mesh_%nsd .gt. 1) then
+                    write(isolvtk,2000) (mesh_%x(j,i),j=1,mesh_%nsd), 0.0
+                else
+                    write(isolvtk,2000) mesh_%x(1,i), 0.0, 0.0
+                endif
+                enddo
+                write(isolvtk,*) 
+                write(tempstr,'(i0)') mesh_%nelems
+                write(tempstr2,'(i0)') (mesh_%nen+1)*mesh_%nelems
+                write(isolvtk,'(a)') "CELLS "//trim(tempstr)//" "//trim(tempstr2)
+                do i=1,mesh_%nelems
+                inodes=mesh_%gnode(i,:); !print*, inodes;
+                write(isolvtk,1000) mesh_%nen, (inodes(j),j=1,mesh_%nen)
+                enddo
+                write(isolvtk,*) 
+                write(tempstr,'(i0)') mesh_%nelems
+                write(isolvtk,'(a)') "CELL_TYPES "//trim(tempstr)
+                do i=1,mesh_%nelems
+                write(isolvtk,'(i0)') 5 
+                enddo
+                write(isolvtk,*) 
+                write(tempstr,'(i0)') mesh_%nnodes
+                write(isolvtk,'(a)') "POINT_DATA "//trim(tempstr)
+                !write(isolvtk,*) "SCALARS scalarField  float 1"
+                write(isolvtk,'(a)') "FIELD FieldData 1"
+                write(isolvtk,'(a)') "nodal 1 "//trim(tempstr)//" float"
+                !write(isolvtk,'(a)') "LOOKUP_TABLE default"
+                do i=1,mesh_%nnodes
+                write(isolvtk,3000) scalar_%u(i)
+                enddo
+                close(isolvtk)
+1000            format(4(i0,1x))
+2000            format(3(f13.10,1x))
+3000            format(1(f12.10))
+            endsubroutine
         endmodule

@@ -29,7 +29,7 @@
           call openFiles
           call preprocessor(malha, potencial)
           call processor(malha, potencial)
-          call print_sol1D(malha, potencial)
+          call print_sol_vtk(malha, potencial)
           call closeFiles
 
         end program

@@ -5,7 +5,9 @@
             implicit none
             
             contains
-
+            !> Reads parameters from input file.
+            !! @param mesh_     A mesh structure
+            !! @param scalar_   A scalar structure
             subroutine setupPhase(mesh_, scalar_)
 
                 use mIO
