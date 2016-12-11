@@ -397,6 +397,37 @@ module mInputReader
         return
     end subroutine readRealKeywordValue !****************************************************************************
 
+    !> Efetua a leitura de uma palavra-chave do tipo de um array de inteiros. 
+    !! A leitura eh realizada linha por linha. A primeira linha informa o numero de valores a ser lido.
+    !! Se nao encontrada a keyword, associa o valor default fornecido.
+    !! @param keyword       A palavra-chave a ser encontrada.
+    !! @param target        Variavel onde os valores serao atribuido.
+    !! @param default_value Valor default.
+    !! @author Diego T. Volpatto
+    subroutine readIntegerArrayValues(keyword, target, default_value)
+        implicit none
+        character(50) keyword
+        character(120) file_line
+        integer :: idx, i, j, n
+        integer(4)  default_value
+        integer*4, allocatable :: target(:)
+        integer*4 keyword_line
+        keyword_line = findKeyword(keyword)
+        if (keyword_line.eq.0) then
+            allocate(target(1))
+            target = default_value
+            return
+        end if
+        file_line = adjustL(trim(file_lines(keyword_line)))
+        read(file_line, *) n
+        allocate(target(n))
+        do i=1,n
+            file_line = adjustL(trim(file_lines(keyword_line+i)))
+            read(file_line, *) target(i)
+        enddo
+        return
+    end subroutine  !****************************************************************************
+
     !> Efetua a leitura de uma palavra-chave do tipo de um array bidimensional real. 
     !! A leitura eh realizada linha por linha.
     !! Se nao encontrado, associa o valor default fornecido.

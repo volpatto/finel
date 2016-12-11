@@ -126,4 +126,42 @@
 
                 endsubroutine
 
+!*************************************************************************************
+
+                !> Routine to check if non-linear iteration converged.
+                !! @param u         Current solution vector
+                !! @param uprev     Previous iteration solution vector
+                !! @param nnodes    Number of nodes
+                !! @param flag      Flag for convergence checked
+                !! @author      Diego Volpatto
+                subroutine check_conv(u, uprev, nnodes, flag)
+
+                    implicit none
+
+                    integer :: nnodes
+                    real*8 :: u(nnodes), uprev(nnodes)
+                    logical :: flag
+
+                    integer :: i
+                    real*8 :: norm, norm_up, norm_down, tol
+
+                    tol = 1.d-4
+
+                    norm_up = 0.d0; norm_down = 0.d0
+
+                    do i=1,nnodes
+                    norm_up = norm_up + (u(i)-uprev(i))**2.d0
+                    norm_down = norm_down + (0.5d0*(u(i)+uprev(i)))**2.d0
+                    enddo
+
+                    norm_up=dsqrt(norm_up); norm_down=dsqrt(norm_down)
+                    norm = norm_up/(1.d0+norm_down)
+                    write(*,*) "Stop criteria norm: ", norm
+
+                    if (norm .le. tol) then
+                    flag = .true.;!stop
+                    endif
+
+                endsubroutine
+
         end module

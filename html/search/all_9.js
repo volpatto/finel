@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['mallocelem',['mallocelem',['../namespacemeshstructure.html#a45ded60156feaba961321a91baefd257',1,'meshstructure']]],
+  ['mallocelem',['mallocelem',['../namespacemeshstructure.html#a9448cd559a71ea7e5bb4fbfb3724856b',1,'meshstructure']]],
   ['mallocelemkf',['mallocelemkf',['../namespacescalarstructure.html#aa6ed456644b9cece32442b984802ec00',1,'scalarstructure']]],
   ['mallocglobalkf',['mallocglobalkf',['../namespacescalarstructure.html#aaa2b5bf4d343d7dfb7f6eb684eaf6b60',1,'scalarstructure']]],
-  ['mallocnodes',['mallocnodes',['../namespacemeshstructure.html#abae0cfcd872784abfbe48b3263cfe17f',1,'meshstructure']]],
+  ['mallocnodes',['mallocnodes',['../namespacemeshstructure.html#ad6a5480782bd8dc7905023202a38eb2a',1,'meshstructure']]],
   ['mat',['mat',['../structmeshstructure_1_1mesh.html#a692d0bee0504eecfe05abc2d22a228b2',1,'meshstructure::mesh::mat()'],['../structscalarstructure_1_1scalarstructuresystem.html#a336c41ffbc0653b8be960e38e15e5c17',1,'scalarstructure::scalarstructuresystem::mat()']]],
   ['mergeincludecontents',['mergeincludecontents',['../namespaceminputreader.html#a13918a8be571d29e5dd201cef2117979',1,'minputreader']]],
   ['mesh',['mesh',['../structmeshstructure_1_1mesh.html',1,'meshstructure']]],

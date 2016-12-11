@@ -21,13 +21,9 @@
             !> Output elements' file name
             character(len=20), parameter :: outElem='outelem.dat'
             !> Solution file name
-            character(len=20), parameter :: solFile='solution.dat'
-            !> Solution file name csv file
-            character(len=20), parameter :: solFileCSV='solution.csv'
-            !> Solution file name vtk file
-            character(len=20), parameter :: solFileVTK='solution.vtk'
+            character(len=50), parameter :: solFile='solution00'
 
-            character(len=50) :: title
+            character(len=50) :: title, file_format
 
             contains
 
@@ -39,7 +35,7 @@
 
                 open(unit=iin,file=inFile)
                 open(unit=iout,file=outFile)
-                open(unit=isol,file=solFile)
+                !open(unit=isol,file=solFile)
                 open(unit=ioutn,file=outNodes)
                 open(unit=ioute,file=outElem)
 
@@ -53,7 +49,7 @@
 
                 close(iin)
                 close(iout)
-                close(isol)
+                !close(isol)
                 close(ioutn)
                 close(ioute)
 
@@ -72,7 +68,7 @@
                 integer             :: i
                 character*8         :: node
 
-                open(unit=100, file='lshp.n')
+                open(unit=100, file=trim(mesh_%filename)//'.n')
                 read(100,*) mesh_%nnodes
                 !print*, mesh_%nnodes
 
@@ -100,7 +96,7 @@
                 integer             :: i
                 character*8         :: elem
 
-                open(unit=100, file='lshp.e')
+                open(unit=100, file=trim(mesh_%filename)//'.e')
                 read(100,*) mesh_%nelems
                 !print*, mesh_%nelems
 
@@ -124,8 +120,9 @@
             !> Prints the solution of scalar field.
             !! @param mesh_     A mesh structure
             !! @param scalar_   A scalar structure
+            !! @param tstep     Time step index
             !! @author  Diego T. Volpatto
-            subroutine print_sol(mesh_, scalar_)
+            subroutine print_sol(mesh_, scalar_, tstep)
 
                 use meshStructure
                 use scalarStructure
@@ -134,13 +131,21 @@
 
                 type(mesh) :: mesh_
                 type(scalarStructureSystem) :: scalar_
+                integer :: tstep
 
                 integer :: i, j
+                character(len=50) :: solFileDAT, tempstr
+
+                write(tempstr,'(i0)') tstep
+                solFileDAT = trim(solFile)//trim(tempstr)//".dat"
+                open(unit=isol,file=solFileDAT)
 
                 do i=1,mesh_%nnodes
                 !write(isol,*) i, mesh_%x(1,i), scalar_%u(i)
                 write(isol,*) i, (mesh_%x(j,i), j=1,mesh_%nsd), scalar_%u(i)
                 enddo
+
+                close(isol)
 
             endsubroutine
 
@@ -148,8 +153,9 @@
             !! aiming to compatibility with Paraview post-processing.
             !! @param mesh_     A mesh structure
             !! @param scalar_   A scalar structure
+            !! @param tstep     Time step index
             !! @author  Diego T. Volpatto
-            subroutine print_sol_csv(mesh_, scalar_)
+            subroutine print_sol_csv(mesh_, scalar_, tstep)
 
                 use meshStructure
                 use scalarStructure
@@ -158,11 +164,15 @@
 
                 type(mesh) :: mesh_
                 type(scalarStructureSystem) :: scalar_
+                integer :: tstep
 
                 integer :: i, j
                 character(len=50) :: xx, yy, zz, scalarField
+                character(len=50) :: solFileCSV, tempstr
                 character(len=5) :: ii
 
+                write(tempstr,'(i0)') tstep
+                solFileCSV = trim(solFile)//trim(tempstr)//".csv"
                 open(unit=isolcsv,file=solFileCSV)
 
                 write(isolcsv,*) "xcoord, ycoord, zcoord, scalar"
@@ -198,8 +208,9 @@
             !! aiming to compatibility with Paraview post-processing.
             !! @param mesh_     A mesh structure
             !! @param scalar_   A scalar structure
+            !! @param tstep     Current time step
             !! @author  Diego T. Volpatto
-            subroutine print_sol_vtk(mesh_, scalar_)
+            subroutine print_sol_vtk(mesh_, scalar_, tstep)
 
                 use meshStructure
                 use scalarStructure
@@ -208,13 +219,16 @@
 
                 type(mesh) :: mesh_
                 type(scalarStructureSystem) :: scalar_
+                integer :: tstep
 
                 integer :: i, j
                 character(len=50) :: xx, yy, zz, scalarField, tempstr
-                character(len=50) :: tempstr2
+                character(len=50) :: tempstr2, solFileVTK
                 character(len=5) :: ii
                 integer :: inodes(mesh_%nen)
 
+                write(tempstr,'(i0)') tstep
+                solFileVTK = trim(solFile)//trim(tempstr)//".vtk"
                 open(unit=isolvtk,file=solFileVTK)
 
                 write(isolvtk,'(a)') "# vtk DataFile Version 3.0"
@@ -259,5 +273,29 @@
 1000            format(4(i0,1x))
 2000            format(3(f13.10,1x))
 3000            format(1(f12.10))
+
+            endsubroutine
+
+            !> Record solution according to specified file kind in
+            !! input.
+            !! @param mesh_     A mesh structure
+            !! @param scalar_   A scalar structure
+            !! @param tstep     Time step to print
+            !! @author Diego T. Volpatto
+            subroutine print_files(mesh_, scalar_, tstep)
+
+                use meshStructure
+                use scalarStructure
+
+                implicit none
+
+                type(mesh) :: mesh_
+                type(scalarStructureSystem) :: scalar_
+                integer :: tstep
+
+                if (file_format .eq. ".dat") call print_sol(mesh_,scalar_,tstep)
+                if (file_format .eq. ".csv") call print_sol_csv(mesh_,scalar_,tstep)
+                if (file_format .eq. ".vtk") call print_sol_vtk(mesh_,scalar_,tstep)
+
             endsubroutine
         endmodule

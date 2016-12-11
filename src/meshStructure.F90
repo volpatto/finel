@@ -26,6 +26,7 @@
                 integer*4, allocatable :: si(:),& !< Opposite i-side
                                     sj(:),& !< Opposite j-side
                                     sk(:) !< Opposite k-side
+                character(50) :: geokind, filename
             end type
 
             contains

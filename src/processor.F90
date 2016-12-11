@@ -15,6 +15,7 @@
                 use meshStructure
                 use scalarStructure
                 use mscalar,    only: localElem, localElem2D
+                use mscalar,    only: fracElem
 
                 implicit none
 
@@ -25,7 +26,8 @@
                 do nel = 1,mesh_%nelems
 
                     if (mesh_%nsd==1) then
-                    call localElem(mesh_, scalar_, nel)
+                    !call localElem(mesh_, scalar_, nel)
+                    call fracElem(mesh_, scalar_, nel)
                     else
                     call localElem2D(mesh_, scalar_, nel)
                     endif
@@ -117,7 +119,7 @@
             !! @param scalar_   A scalar structure
             !! @param n         Node index of BC
             !! @author Diego Volpatto
-            subroutine neumann1D(mesh_, scalar_, n)
+            subroutine neumann(mesh_, scalar_, n)
 
                 use meshStructure
                 use scalarStructure
@@ -127,11 +129,18 @@
                 type(mesh) :: mesh_
                 type(scalarStructureSystem) :: scalar_
                 integer :: n
-                real*8 :: val
+                real*8 :: val, valmax, valmin
 
                 val = scalar_%vbc(mesh_%flagnode(n))
-                if (n.eq.1) scalar_%rhsys(n) = scalar_%rhsys(n) + val;
-                if (n.eq.mesh_%nnodes) scalar_%rhsys(n) = scalar_%rhsys(n) - val;
+                if (mesh_%geokind .eq. "rectangular") then
+                    if (n.eq.1) scalar_%rhsys(n) = scalar_%rhsys(n) + val;
+                    if (n.eq.mesh_%nnodes) scalar_%rhsys(n) = scalar_%rhsys(n) - val;
+                else
+                    valmax = maxval(mesh_%x)*val; 
+                    valmin = minval(mesh_%x(1,1:))*val
+                    if (n.eq.1) scalar_%rhsys(n) = scalar_%rhsys(n) +valmin;
+                    if (n.eq.mesh_%nnodes) scalar_%rhsys(n) =scalar_%rhsys(n)-valmax;
+                endif
 
             endsubroutine
 
@@ -160,13 +169,17 @@
                         call drchlt(mesh_, scalar_,i)
                     endif
                     if (scalar_%kbc(mesh_%flagnode(i)).eq.2) then
-                        call neumann1D(mesh_, scalar_,i)
+                        call neumann(mesh_, scalar_,i)
                     endif
                 endif
                 enddo
 
             endsubroutine
 
+            !> Executes Gauss reduction and forward substitution solving
+            !! Ku=F.
+            !! @param mesh_     A mesh structure
+            !! @param scalar_   A scalar structure
             subroutine solver(mesh_, scalar_)
 
                 use meshStructure
@@ -178,7 +191,7 @@
                 type(mesh) :: mesh_
                 type(scalarStructureSystem) :: scalar_
 
-                call tri(scalar_%lhsys,mesh_%nnodes)
+                call tri(scalar_%lhsys,mesh_%nnodes);
                 call rhsub(scalar_%lhsys,scalar_%u,scalar_%rhsys,mesh_%nnodes)
 
             endsubroutine
@@ -192,17 +205,122 @@
                 use meshStructure
                 use scalarStructure
                 use mshapeFunctions, only: setint, setint2
+                use mIO
+                use mUtilities, only: check_conv
+                use mtermo, only: init_zcoef
 
                 implicit none
 
                 type(mesh) :: mesh_
                 type(scalarStructureSystem) :: scalar_
+                
+                real*8 :: t1, t2, omega
+                integer :: tstep, i, j
+                integer, parameter :: niter = 5000
+                logical :: flagit
 
                 if (mesh_%nsd==1) call setint
                 if (mesh_%nsd==2) call setint2
+                
+                call init_zcoef
+
+                ! Set the initial condition
+                scalar_%u_prev = 6.4d7
+
+                write(iout,*) "Processor procedures start:"
+                write(*,*) "Processor procedures start:"
+                write(iout,*)
+                write(*,*)
+
+                ! Begin loop in time
+                i = 1
+                do tstep = 1,scalar_%nsteps
+
+                write(iout,*) "----------------------------------------"
+                write(*,*) "----------------------------------------"
+                write(iout,3333) "Time step = ", tstep, "t = ", scalar_%dt*tstep
+                write(*,3333) "Time step =", tstep, "t =", scalar_%dt*tstep
+
+                if (scalar_%linflag .eq. 1) then
+                ! Linear problem mount and solver procedures
+
+                call cpu_time(t1)
                 call formKF(mesh_, scalar_)
                 call applybc(mesh_, scalar_)
+                call cpu_time(t2)
+                write(iout,*) "Time elapsed (s) to mount system Ku=F:", (t2-t1)
+                write(*,*) "Time elapsed (s) to mount system Ku=F:", (t2-t1)
+
+                call cpu_time(t1)
                 call solver(mesh_, scalar_)
+                call cpu_time(t2)
+                write(iout,*) "Time elapsed (s) to solve system Ku=F:", (t2-t1)
+                write(*,*) "Time elapsed (s) to solve system Ku=F:", (t2-t1)
+                
+                ! Clear stiffness matrix and load vector
+                scalar_%lhsys = 0.d0; scalar_%rhsys = 0.d0
+
+                else
+                ! Non-linear problem mount and solver by Picard
+                ! iteration.
+
+                omega = 0.5d0
+                flagit = .false.
+                scalar_%u_prev_it = scalar_%u_prev
+
+                j = 0
+                do while ((j.le.niter) .and. (flagit .eqv. .false.))
+                
+                j = j + 1
+                write(iout,4444) "***** Picard iteration",j,"*****"
+                write(*,4444) "***** Picard iteration",j,"*****"
+                
+                call cpu_time(t1)
+                call formKF(mesh_, scalar_)
+                call applybc(mesh_, scalar_)
+                call cpu_time(t2)
+                write(iout,*) "Time elapsed (s) to mount system Ku=F:", (t2-t1)
+                write(*,*) "Time elapsed (s) to mount system Ku=F:", (t2-t1)
+                
+                call cpu_time(t1)
+                call solver(mesh_, scalar_)
+                call cpu_time(t2)
+                write(iout,*) "Time elapsed (s) to solve system Ku=F:", (t2-t1)
+                write(*,*) "Time elapsed (s) to solve system Ku=F:", (t2-t1)
+
+                ! Check if iteration converged
+                call check_conv(scalar_%u,scalar_%u_prev_it,mesh_%nnodes,flagit)
+                !write(*,*) scalar_%u(1:5)
+                !write(*,*) scalar_%u_prev_it(1:5)
+
+                ! Update previous iteration with relaxation factor
+                scalar_%u_prev_it = omega*scalar_%u+(1.d0-omega)*scalar_%u_prev_it
+
+                ! Clear K and F to reassemble in next iteration
+                scalar_%lhsys = 0.d0; scalar_%rhsys = 0.d0;
+
+                enddo
+
+                endif
+
+                ! Record solution to a file
+                if (tstep .eq. scalar_%tprint(i)) then
+                    call print_files(mesh_, scalar_, i)
+                    i = i + 1
+                endif
+
+                ! Update previous solution
+                scalar_%u_prev = scalar_%u; scalar_%u = 0.d0
+
+                enddo
+
+                write(iout,*) "----------------------------------------"
+                write(*,*) "----------------------------------------"
+                write(iout,*)
+                write(*,*)
+
+3333            format(1x,(a,1x),i0,(1x,a),(f0.10))
+4444            format(1x,(a,1x),i0,(1x,a))
 
             endsubroutine
 

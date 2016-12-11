@@ -13,7 +13,6 @@
                 !! @param nel      [in] Index of current element
                 !! @author Diego Volpatto
                 subroutine localElem(mesh_, scalar_, nel)
-                !subroutine localElem1D(x1,x2,n,eleft,eright,ni,mat)
 
                     use mshapeFunctions, only: xi, w, shpf1d
                     use meshStructure
@@ -28,23 +27,24 @@
 
                     real*8 :: psi(mesh_%nen), dpsi(mesh_%nen), xl, dx
                     !real*8 :: eleft(n,n), eright(n)
-                    real*8 :: x1, x2
-                    real*8 :: xk, xb, xc, xf, pi
+                    real*8 :: x1, x2, xl2
+                    real*8 :: xk, xb, xc, xf, pi, fac, uup
                     integer :: i, j, l, i1, i2
+                    integer :: inodes(mesh_%nen)
 
                     pi = 4.0d0*datan(1.0d0) 
 
                     xk = scalar_%mat(mesh_%mat(nel),1); !print*, xk
+                    xk = 1.d0
                     xb = scalar_%mat(mesh_%mat(nel),2); !print*, xb
                     xc = scalar_%mat(mesh_%mat(nel),3); !print*, xc
                     xf = 0.0
 
-                    i1 = mesh_%gnode(nel,1)+1; !print*, i1
-                    i2 = mesh_%gnode(nel,2)+1; !print*, i2
-                    x1 = mesh_%x(1,i1); !print*, "x1=", x1
-                    x2 = mesh_%x(1,i2); !print*,"x2=", x2
+                    inodes=mesh_%gnode(nel,:)+1; !print*, inodes;
+                    x1 = mesh_%x(1,inodes(1)); !print*, "x1=", x1
+                    x2 = mesh_%x(1,inodes(2)); !print*,"x2=", x2
 
-                    dx = (x2-x1)/2.d0; !print*, "dx =", dx
+                    dx = (x2-x1)/2.d0; !print*, "dx =", dx;stop
 
                     ! Initialize element arrays
                     scalar_%lhelem = 0.0d0; scalar_%rhelem = 0.d0
@@ -54,22 +54,60 @@
                     do l=1,mesh_%nintp
                         xl = x1+(1.d0+xi(l,mesh_%nintp))*dx
                         !print*, xl
-                        !xf = dsin(pi*xl)*dcos(pi*xl)
-                        xf = 6.0d0*xl
+                        !xl = dx
+                        !xf = dsin(pi*xl)*dcos(pi*xl)/xl
+                        !xf = (4.d0/3.d0)*xl
+                        !xf = xl
+                        xf = 0.d0
+                        !xf = xi(l,mesh_%nintp)
                         call shpf1d(xi(l,mesh_%nintp),mesh_%nen,psi,dpsi)
+                        fac = w(l,mesh_%nintp)*dx
+                        if (scalar_%transient .eq. 0) then
+                        ! Compute load vector - rhs
                         do i=1,mesh_%nen
                             scalar_%rhelem(i) = scalar_%rhelem(i)+ &
-                                psi(i)*xf*w(l,mesh_%nintp)*dx
+                                psi(i)*xf*fac
+                            if (mesh_%geokind .eq. "radial") then
+                            scalar_%rhelem(i)=scalar_%rhelem(i)*xl
+                            endif
+                            ! Compute stiffness matrix - lhs    
                             do j=1,mesh_%nen
                                scalar_%lhelem(i,j) = scalar_%lhelem(i,j) + & 
                                    (xk*dpsi(i)*dpsi(j)/dx/dx + &
                                    xc*psi(i)*dpsi(j)/dx + &
-                                   xb*psi(i)*psi(j))*w(l,mesh_%nintp)*dx
-                                !write(*,*) "i =", i,"j =",j, &
-                                    !"eleft=",scalar_%lhelem(i,j)
+                                   xb*psi(i)*psi(j))*fac
+                                if (mesh_%geokind .eq. "radial") then
+                                scalar_%lhelem(i,j)=scalar_%lhelem(i,j)*xl
+                                endif
                             enddo
-                            !write(*,*) "i =", i, "eright =",scalar_%rhelem(i)
                         enddo
+                        else
+                        ! Compute previous solution contribution
+                        uup = 0.d0
+                        do i=1,mesh_%nen
+                        uup = uup + psi(i)*scalar_%u_prev(inodes(i))
+                        enddo
+                        ! Compute load vector - rhs
+                        do i=1,mesh_%nen
+                            scalar_%rhelem(i) = scalar_%rhelem(i)+ &
+                                psi(i)*xf*fac*scalar_%dt+ &
+                                uup*psi(i)*fac
+                            if (mesh_%geokind .eq. "radial") then
+                            scalar_%rhelem(i)=scalar_%rhelem(i)*xl
+                            endif
+                            ! Compute stiffness matrix - lhs    
+                            do j=1,mesh_%nen
+                               scalar_%lhelem(i,j) = scalar_%lhelem(i,j) + & 
+                                   (xk*dpsi(i)*dpsi(j)/dx/dx + &
+                                   xc*psi(i)*dpsi(j)/dx + &
+                                   xb*psi(i)*psi(j))*fac*scalar_%dt+ &
+                                   psi(i)*psi(j)*fac
+                                if (mesh_%geokind .eq. "radial") then
+                                scalar_%lhelem(i,j)=scalar_%lhelem(i,j)*xl
+                                endif
+                            enddo
+                        enddo
+                        endif
                     enddo
 
                 end subroutine
@@ -102,6 +140,7 @@
                     integer :: i, j, l, k
                     integer :: inodes(mesh_%nen)
                     real*8 :: xnodes(mesh_%nsd,mesh_%nen)
+                    real*8 :: uup
 
                     pi = 4.0d0*datan(1.0d0)
 
@@ -173,15 +212,37 @@
                         !xf=dsin(pi*mesh_%xV(nel))*dsin(pi*mesh_%yV(nel))
                         xf=1.d0
                         !xf=mesh_%xV(nel)
+                        if (scalar_%transient .eq. 0) then
+                        ! Compute load vector - rhs
                         do i=1,mesh_%nen
                         scalar_%rhelem(i)=scalar_%rhelem(i)+ &
                                         xf*psi(i)*fac
+                        ! Compute stiffness matrix - lhs
                         do j=i,mesh_%nen
                         scalar_%lhelem(i,j)=scalar_%lhelem(i,j)+ &
                            fac*(xk*(dpsix(i)*dpsix(j)+dpsiy(i)*dpsiy(j))+&
                            xb*psi(i)*psi(j))
                         enddo
-                        enddo 
+                        enddo
+                        else 
+                        ! Compute previous solution contribution
+                        uup = 0.d0
+                        do i=1,mesh_%nen
+                        uup = uup + psi(i)*scalar_%u_prev(inodes(i))
+                        enddo
+                        ! Compute load vector - rhs
+                        do i=1,mesh_%nen
+                        scalar_%rhelem(i)=scalar_%rhelem(i)+ &
+                                        scalar_%dt*xf*psi(i)*fac+ &
+                                        fac*psi(i)*uup
+                        ! Compute stiffness matrix - lhs
+                        do j=i,mesh_%nen
+                        scalar_%lhelem(i,j)=scalar_%lhelem(i,j)+ &
+                           scalar_%dt*fac*(xk*(dpsix(i)*dpsix(j)+dpsiy(i)*dpsiy(j))+&
+                           xb*psi(i)*psi(j))
+                        enddo
+                        enddo
+                        endif
                     enddo
                     ! Calculate lower symmetric part of EK
                     do i=1,mesh_%nen
@@ -189,7 +250,138 @@
                     scalar_%lhelem(i,j) = scalar_%lhelem(j,i)
                     enddo
                     enddo
-                deallocate(xi); deallocate(w)
+                    deallocate(xi); deallocate(w)
                 end subroutine
+
+                !> Computes a master element contribution in fracture
+                !! case -- 1D.
+                !! @param mesh_    [in/out] A mesh structure
+                !! @param scalar_  [in/out] A scalar structure
+                !! @param nel      [in] Index of current element
+                !! @author Diego Volpatto
+                subroutine fracElem(mesh_, scalar_, nel)
+
+                    use mshapeFunctions, only: xi, w, shpf1d
+                    use meshStructure
+                    use scalarStructure
+                    use mtermo, only: Z_p
+
+                    implicit none
+
+                    !integer :: n, ni, mat
+                    type(mesh) :: mesh_
+                    type(scalarStructureSystem) :: scalar_
+                    integer :: nel
+
+                    real*8 :: psi(mesh_%nen), dpsi(mesh_%nen), xl, dx
+                    !real*8 :: eleft(n,n), eright(n)
+                    real*8 :: x1, x2, xl2
+                    real*8 :: xk, xb, xc, xf, pi, fac, uup, uu, graduu
+                    integer :: i, j, l, i1, i2
+                    integer :: inodes(mesh_%nen)
+
+                    ! Physical parameters declaration
+                    real*8 :: dimL, p0, kappa, phi, alpha, beta, z, zp
+
+                    pi = 4.0d0*datan(1.0d0) 
+
+                    ! Physical parameters
+                    !dimL = 50.0
+                    kappa = 6.d-14
+                    phi = 0.25
+                    p0 = 6.4d7
+                    alpha = phi
+                    beta = kappa
+
+                    xk = scalar_%mat(mesh_%mat(nel),1); !print*, xk
+                    xk = beta
+                    xb = scalar_%mat(mesh_%mat(nel),2); !print*, xb
+                    xc = scalar_%mat(mesh_%mat(nel),3); !print*, xc
+                    xf = 0.0
+
+                    inodes=mesh_%gnode(nel,:)+1; !print*, inodes;
+                    x1 = mesh_%x(1,inodes(1)); !print*, "x1=", x1
+                    x2 = mesh_%x(1,inodes(2)); !print*,"x2=", x2
+
+                    dx = (x2-x1)/2.d0; !print*, "dx =", dx;stop
+
+                    ! Initialize element arrays
+                    scalar_%lhelem = 0.0d0; scalar_%rhelem = 0.d0
+                    psi = 0.0d0; dpsi = 0.d0
+
+                    ! Begin integration loop
+                    do l=1,mesh_%nintp
+                        xl = x1+(1.d0+xi(l,mesh_%nintp))*dx
+                        !print*, xl
+                        !xl = dx
+                        !xf = dsin(pi*xl)*dcos(pi*xl)/xl
+                        !xf = (4.d0/3.d0)*xl
+                        !xf = xl
+                        xf = 0.d0
+                        !xf = xi(l,mesh_%nintp)
+                        call shpf1d(xi(l,mesh_%nintp),mesh_%nen,psi,dpsi)
+                        fac = w(l,mesh_%nintp)*dx
+                        if (scalar_%transient .eq. 0) then
+                        ! Compute load vector - rhs
+                        do i=1,mesh_%nen
+                            scalar_%rhelem(i) = scalar_%rhelem(i)+ &
+                                psi(i)*xf*fac
+                            if (mesh_%geokind .eq. "radial") then
+                            scalar_%rhelem(i)=scalar_%rhelem(i)*xl
+                            endif
+                            ! Compute stiffness matrix - lhs    
+                            do j=1,mesh_%nen
+                               scalar_%lhelem(i,j) = scalar_%lhelem(i,j) + & 
+                                   (xk*dpsi(i)*dpsi(j)/dx/dx + &
+                                   xc*psi(i)*dpsi(j)/dx + &
+                                   xb*psi(i)*psi(j))*fac
+                                if (mesh_%geokind .eq. "radial") then
+                                scalar_%lhelem(i,j)=scalar_%lhelem(i,j)*xl
+                                endif
+                            enddo
+                        enddo
+                        else
+                        ! Compute previous solution contribution
+                        uup = 0.d0
+                        uu = 0.d0
+                        graduu = 0.d0
+                        do i=1,mesh_%nen
+                        uup = uup + psi(i)*scalar_%u_prev(inodes(i))
+                        uu = uu + psi(i)*scalar_%u_prev_it(inodes(i))
+                        graduu=graduu+dpsi(i)*scalar_%u_prev_it(inodes(i))
+                        enddo
+                        call Z_p(uu,z)
+                        call Z_p(uup,zp)
+
+                        !write(*,*) "uu =", uu
+                        !write(*,*) "uup =", uup
+                        !write(*,*) "z =", z
+                        !write(*,*) "zp =", zp
+
+                        ! Compute load vector - rhs
+                        do i=1,mesh_%nen
+                            scalar_%rhelem(i) = scalar_%rhelem(i)+ &
+                                psi(i)*xf*fac*scalar_%dt+ &
+                                alpha*(uup/zp)*psi(i)*fac
+                            if (mesh_%geokind .eq. "radial") then
+                            scalar_%rhelem(i)=scalar_%rhelem(i)*xl
+                            endif
+                            ! Compute stiffness matrix - lhs    
+                            do j=1,mesh_%nen
+                               scalar_%lhelem(i,j) = scalar_%lhelem(i,j) + & 
+                                   (xk*(uu/z)*dpsi(i)*dpsi(j)/dx/dx + &
+                                   xc*psi(i)*dpsi(j)/dx + &
+                                   xb*psi(i)*psi(j))*fac*scalar_%dt + &
+                                   alpha*(psi(i)/z)*psi(j)*fac
+                                if (mesh_%geokind .eq. "radial") then
+                                scalar_%lhelem(i,j)=scalar_%lhelem(i,j)*xl
+                                endif
+                            enddo
+                        enddo
+                        endif
+                    enddo
+
+                end subroutine
+
 
         end module
