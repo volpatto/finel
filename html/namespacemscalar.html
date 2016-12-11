@@ -76,11 +76,84 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a1d472f9cfde9e0089129984b4871d708"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemscalar.html#a1d472f9cfde9e0089129984b4871d708">localelem2d</a> (mesh_, scalar_, nel)</td></tr>
 <tr class="memdesc:a1d472f9cfde9e0089129984b4871d708"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes a master element contribution &ndash; 2D.  <a href="#a1d472f9cfde9e0089129984b4871d708">More...</a><br /></td></tr>
 <tr class="separator:a1d472f9cfde9e0089129984b4871d708"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb1ca61b793bd5dd4560a7f3a5d58d50"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemscalar.html#aeb1ca61b793bd5dd4560a7f3a5d58d50">fracelem</a> (mesh_, scalar_, nel, t)</td></tr>
+<tr class="memdesc:aeb1ca61b793bd5dd4560a7f3a5d58d50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes a master element contribution in fracture case &ndash; 1D.  <a href="#aeb1ca61b793bd5dd4560a7f3a5d58d50">More...</a><br /></td></tr>
+<tr class="separator:aeb1ca61b793bd5dd4560a7f3a5d58d50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Contains variables and subroutine related to a general scalar problem. </p>
 <dl class="section author"><dt>Author</dt><dd>Diego T. Volpatto </dd></dl>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
+<a id="aeb1ca61b793bd5dd4560a7f3a5d58d50"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb1ca61b793bd5dd4560a7f3a5d58d50">&sect;&nbsp;</a></span>fracelem()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine mscalar::fracelem </td>
+          <td>(</td>
+          <td class="paramtype">type(mesh)&#160;</td>
+          <td class="paramname"><em>mesh_</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(scalarstructuresystem)&#160;</td>
+          <td class="paramname"><em>scalar_</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>nel</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>t</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Computes a master element contribution in fracture case &ndash; 1D. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mesh_</td><td>[in/out] A mesh structure </td></tr>
+    <tr><td class="paramname">scalar_</td><td>[in/out] A scalar structure </td></tr>
+    <tr><td class="paramname">nel</td><td>[in] Index of current element </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Diego Volpatto </dd></dl>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="namespacemscalar_aeb1ca61b793bd5dd4560a7f3a5d58d50_cgraph.png" border="0" usemap="#namespacemscalar_aeb1ca61b793bd5dd4560a7f3a5d58d50_cgraph" alt=""/></div>
+<map name="namespacemscalar_aeb1ca61b793bd5dd4560a7f3a5d58d50_cgraph" id="namespacemscalar_aeb1ca61b793bd5dd4560a7f3a5d58d50_cgraph">
+<area shape="rect" id="node2" href="namespacemshapefunctions.html#a754cca7158b7b27b2f37403c7452c551" title="Calculates the values of the shape functions and their derivatives &#45; 1D. " alt="" coords="180,5,348,32"/>
+<area shape="rect" id="node3" href="namespacemtermo.html#a973c9542e66ffb2f671ed62cb494919a" title="Computes compressibility factor. " alt="" coords="217,56,311,83"/>
+</map>
+</div>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="namespacemscalar_aeb1ca61b793bd5dd4560a7f3a5d58d50_icgraph.png" border="0" usemap="#namespacemscalar_aeb1ca61b793bd5dd4560a7f3a5d58d50_icgraph" alt=""/></div>
+<map name="namespacemscalar_aeb1ca61b793bd5dd4560a7f3a5d58d50_icgraph" id="namespacemscalar_aeb1ca61b793bd5dd4560a7f3a5d58d50_icgraph">
+<area shape="rect" id="node2" href="namespacemprocessor.html#a33d385ecc6f5b4ed00f8f12ebf2ffca7" title="Form and assemble Ku = F system. " alt="" coords="180,5,315,32"/>
+<area shape="rect" id="node3" href="namespacemprocessor.html#a172249f4004da8b3b1395e75584c2921" title="Processor routine phase. " alt="" coords="363,5,517,32"/>
+<area shape="rect" id="node4" href="driver_8_f90.html#a6e3eeecf143064d98b191797e5da2c06" title="A FINite ELement program for general purpose problems. The present code is based in the book &quot;Finite ..." alt="" coords="565,5,612,32"/>
+</map>
+</div>
+
+</div>
+</div>
 <a id="a3824c0240268267041ee36557cb078b6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3824c0240268267041ee36557cb078b6">&sect;&nbsp;</a></span>localelem()</h2>
 
@@ -136,9 +209,9 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="namespacemscalar_a3824c0240268267041ee36557cb078b6_icgraph.png" border="0" usemap="#namespacemscalar_a3824c0240268267041ee36557cb078b6_icgraph" alt=""/></div>
 <map name="namespacemscalar_a3824c0240268267041ee36557cb078b6_icgraph" id="namespacemscalar_a3824c0240268267041ee36557cb078b6_icgraph">
-<area shape="rect" id="node2" href="namespacemprocessor.html#a60bf5c4c22733be532d8957a3b4f95f0" title="Form and assemble Ku = F system. " alt="" coords="184,5,319,32"/>
+<area shape="rect" id="node2" href="namespacemprocessor.html#a33d385ecc6f5b4ed00f8f12ebf2ffca7" title="Form and assemble Ku = F system. " alt="" coords="184,5,319,32"/>
 <area shape="rect" id="node3" href="namespacemprocessor.html#a172249f4004da8b3b1395e75584c2921" title="Processor routine phase. " alt="" coords="367,5,521,32"/>
-<area shape="rect" id="node4" href="driver_8_f90.html#a6e3eeecf143064d98b191797e5da2c06" title="A FINite ELement program for general purpose problems. The present is based in the book &quot;Finite Eleme..." alt="" coords="569,5,616,32"/>
+<area shape="rect" id="node4" href="driver_8_f90.html#a6e3eeecf143064d98b191797e5da2c06" title="A FINite ELement program for general purpose problems. The present code is based in the book &quot;Finite ..." alt="" coords="569,5,616,32"/>
 </map>
 </div>
 
@@ -199,9 +272,9 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="namespacemscalar_a1d472f9cfde9e0089129984b4871d708_icgraph.png" border="0" usemap="#namespacemscalar_a1d472f9cfde9e0089129984b4871d708_icgraph" alt=""/></div>
 <map name="namespacemscalar_a1d472f9cfde9e0089129984b4871d708_icgraph" id="namespacemscalar_a1d472f9cfde9e0089129984b4871d708_icgraph">
-<area shape="rect" id="node2" href="namespacemprocessor.html#a60bf5c4c22733be532d8957a3b4f95f0" title="Form and assemble Ku = F system. " alt="" coords="199,5,333,32"/>
+<area shape="rect" id="node2" href="namespacemprocessor.html#a33d385ecc6f5b4ed00f8f12ebf2ffca7" title="Form and assemble Ku = F system. " alt="" coords="199,5,333,32"/>
 <area shape="rect" id="node3" href="namespacemprocessor.html#a172249f4004da8b3b1395e75584c2921" title="Processor routine phase. " alt="" coords="381,5,536,32"/>
-<area shape="rect" id="node4" href="driver_8_f90.html#a6e3eeecf143064d98b191797e5da2c06" title="A FINite ELement program for general purpose problems. The present is based in the book &quot;Finite Eleme..." alt="" coords="584,5,631,32"/>
+<area shape="rect" id="node4" href="driver_8_f90.html#a6e3eeecf143064d98b191797e5da2c06" title="A FINite ELement program for general purpose problems. The present code is based in the book &quot;Finite ..." alt="" coords="584,5,631,32"/>
 </map>
 </div>
 

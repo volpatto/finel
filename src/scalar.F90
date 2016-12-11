@@ -259,7 +259,7 @@
                 !! @param scalar_  [in/out] A scalar structure
                 !! @param nel      [in] Index of current element
                 !! @author Diego Volpatto
-                subroutine fracElem(mesh_, scalar_, nel)
+                subroutine fracElem(mesh_, scalar_, nel, t)
 
                     use mshapeFunctions, only: xi, w, shpf1d
                     use meshStructure
@@ -272,6 +272,7 @@
                     type(mesh) :: mesh_
                     type(scalarStructureSystem) :: scalar_
                     integer :: nel
+                    real*8 :: t
 
                     real*8 :: psi(mesh_%nen), dpsi(mesh_%nen), xl, dx
                     !real*8 :: eleft(n,n), eright(n)
@@ -281,17 +282,18 @@
                     integer :: inodes(mesh_%nen)
 
                     ! Physical parameters declaration
-                    real*8 :: dimL, p0, kappa, phi, alpha, beta, z, zp
+                    real*8 :: dimL, p0, kappa, phi, alpha, beta, z, zp, mu
 
                     pi = 4.0d0*datan(1.0d0) 
 
                     ! Physical parameters
                     !dimL = 50.0
-                    kappa = 6.d-14
+                    kappa = 1.d-14
+                    mu = 1.d-5
                     phi = 0.25
-                    p0 = 6.4d7
+                    p0 = 2.0d7
                     alpha = phi
-                    beta = kappa
+                    beta = kappa/mu
 
                     xk = scalar_%mat(mesh_%mat(nel),1); !print*, xk
                     xk = beta
@@ -317,7 +319,9 @@
                         !xf = dsin(pi*xl)*dcos(pi*xl)/xl
                         !xf = (4.d0/3.d0)*xl
                         !xf = xl
-                        xf = 0.d0
+                        xf = (5.5d5/(minval(mesh_%x)-maxval(mesh_%x)))* &
+                            (xl - maxval(mesh_%x))* &
+                            (dexp(-1.d-1*t/(scalar_%nsteps*maxval(scalar_%tprint))))
                         !xf = xi(l,mesh_%nintp)
                         call shpf1d(xi(l,mesh_%nintp),mesh_%nen,psi,dpsi)
                         fac = w(l,mesh_%nintp)*dx

@@ -17,5 +17,6 @@ var searchData=
   ['msetup',['msetup',['../namespacemsetup.html',1,'']]],
   ['mshapefunctions',['mshapefunctions',['../namespacemshapefunctions.html',1,'']]],
   ['msolver',['msolver',['../namespacemsolver.html',1,'']]],
+  ['mtermo',['mtermo',['../namespacemtermo.html',1,'']]],
   ['mutilities',['mutilities',['../namespacemutilities.html',1,'']]]
 ];

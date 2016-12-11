@@ -85,11 +85,93 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:af470b375ded287ebcdf24adadc9c75d9"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemutilities.html#af470b375ded287ebcdf24adadc9c75d9">print_matrix</a> (A, n, m)</td></tr>
 <tr class="memdesc:af470b375ded287ebcdf24adadc9c75d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prints in the screen a matrix A(n,m)  <a href="#af470b375ded287ebcdf24adadc9c75d9">More...</a><br /></td></tr>
 <tr class="separator:af470b375ded287ebcdf24adadc9c75d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a801d1667df96dc4cd95f8a89114f73ea"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemutilities.html#a801d1667df96dc4cd95f8a89114f73ea">check_conv</a> (u, uprev, nnodes, tol, norm, flag)</td></tr>
+<tr class="memdesc:a801d1667df96dc4cd95f8a89114f73ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Routine to check if non-linear iteration converged.  <a href="#a801d1667df96dc4cd95f8a89114f73ea">More...</a><br /></td></tr>
+<tr class="separator:a801d1667df96dc4cd95f8a89114f73ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bf3025952c8ee8022c1310044f4f16b"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemutilities.html#a0bf3025952c8ee8022c1310044f4f16b">factor_picard</a> (alpha, delta, eps, omega_min, omega)</td></tr>
+<tr class="memdesc:a0bf3025952c8ee8022c1310044f4f16b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes underrelaxation factor for Picard iteration.  <a href="#a0bf3025952c8ee8022c1310044f4f16b">More...</a><br /></td></tr>
+<tr class="separator:a0bf3025952c8ee8022c1310044f4f16b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ae4bf4153c503c203cd38479d7fd9c7"><td class="memItemLeft" align="right" valign="top">subroutine&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacemutilities.html#a3ae4bf4153c503c203cd38479d7fd9c7">scaling_picard</a> (i, delta, deltap, eps, rho, omega, omega_min, alpha)</td></tr>
+<tr class="memdesc:a3ae4bf4153c503c203cd38479d7fd9c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rescaling shape factor for underrelaxation.  <a href="#a3ae4bf4153c503c203cd38479d7fd9c7">More...</a><br /></td></tr>
+<tr class="separator:a3ae4bf4153c503c203cd38479d7fd9c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Module for auxiliar routines. </p>
 <dl class="section author"><dt>Author</dt><dd>Diego T. Volpatto </dd></dl>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
+<a id="a801d1667df96dc4cd95f8a89114f73ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a801d1667df96dc4cd95f8a89114f73ea">&sect;&nbsp;</a></span>check_conv()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine mutilities::check_conv </td>
+          <td>(</td>
+          <td class="paramtype">real*8, dimension(nnodes)&#160;</td>
+          <td class="paramname"><em>u</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8, dimension(nnodes)&#160;</td>
+          <td class="paramname"><em>uprev</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>nnodes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>tol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>norm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">logical&#160;</td>
+          <td class="paramname"><em>flag</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Routine to check if non-linear iteration converged. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">u</td><td>Current solution vector </td></tr>
+    <tr><td class="paramname">uprev</td><td>Previous iteration solution vector </td></tr>
+    <tr><td class="paramname">nnodes</td><td>Number of nodes </td></tr>
+    <tr><td class="paramname">flag</td><td>Flag for convergence checked </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Diego Volpatto </dd></dl>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="namespacemutilities_a801d1667df96dc4cd95f8a89114f73ea_icgraph.png" border="0" usemap="#namespacemutilities_a801d1667df96dc4cd95f8a89114f73ea_icgraph" alt=""/></div>
+<map name="namespacemutilities_a801d1667df96dc4cd95f8a89114f73ea_icgraph" id="namespacemutilities_a801d1667df96dc4cd95f8a89114f73ea_icgraph">
+<area shape="rect" id="node2" href="namespacemprocessor.html#a172249f4004da8b3b1395e75584c2921" title="Processor routine phase. " alt="" coords="205,5,360,32"/>
+<area shape="rect" id="node3" href="driver_8_f90.html#a6e3eeecf143064d98b191797e5da2c06" title="A FINite ELement program for general purpose problems. The present code is based in the book &quot;Finite ..." alt="" coords="408,5,455,32"/>
+</map>
+</div>
+
+</div>
+</div>
 <a id="a385b8a94938c57f3606b1bd17c08e716"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a385b8a94938c57f3606b1bd17c08e716">&sect;&nbsp;</a></span>f1()</h2>
 
@@ -119,6 +201,73 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="namespacemutilities_a385b8a94938c57f3606b1bd17c08e716_icgraph.png" border="0" usemap="#namespacemutilities_a385b8a94938c57f3606b1bd17c08e716_icgraph" alt=""/></div>
 <map name="namespacemutilities_a385b8a94938c57f3606b1bd17c08e716_icgraph" id="namespacemutilities_a385b8a94938c57f3606b1bd17c08e716_icgraph">
 <area shape="rect" id="node2" href="namespacemutilities.html#a3a6d87070bf24e58257a843b5d84fd37" title="Subroutine that computes gaussian quadrature of f1. " alt="" coords="147,5,264,32"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="a0bf3025952c8ee8022c1310044f4f16b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0bf3025952c8ee8022c1310044f4f16b">&sect;&nbsp;</a></span>factor_picard()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine mutilities::factor_picard </td>
+          <td>(</td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>alpha</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>delta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>eps</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>omega_min</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>omega</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Computes underrelaxation factor for Picard iteration. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">alpha</td><td>[in] Shape factor for underrelaxation function </td></tr>
+    <tr><td class="paramname">delta</td><td>[in] Error between two Picard iteration </td></tr>
+    <tr><td class="paramname">eps</td><td>[in] Tolerance value (closure criterion) </td></tr>
+    <tr><td class="paramname">omega_min</td><td>[in] Minimum value of underrelaxation function  omega [out] Underrelaxation factor </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Diego T. Volpatto </dd></dl>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="namespacemutilities_a0bf3025952c8ee8022c1310044f4f16b_icgraph.png" border="0" usemap="#namespacemutilities_a0bf3025952c8ee8022c1310044f4f16b_icgraph" alt=""/></div>
+<map name="namespacemutilities_a0bf3025952c8ee8022c1310044f4f16b_icgraph" id="namespacemutilities_a0bf3025952c8ee8022c1310044f4f16b_icgraph">
+<area shape="rect" id="node2" href="namespacemprocessor.html#a172249f4004da8b3b1395e75584c2921" title="Processor routine phase. " alt="" coords="168,13,323,39"/>
+<area shape="rect" id="node3" href="driver_8_f90.html#a6e3eeecf143064d98b191797e5da2c06" title="A FINite ELement program for general purpose problems. The present code is based in the book &quot;Finite ..." alt="" coords="371,13,417,39"/>
 </map>
 </div>
 
@@ -267,6 +416,94 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="namespacemutilities_a3a6d87070bf24e58257a843b5d84fd37_cgraph.png" border="0" usemap="#namespacemutilities_a3a6d87070bf24e58257a843b5d84fd37_cgraph" alt=""/></div>
 <map name="namespacemutilities_a3a6d87070bf24e58257a843b5d84fd37_cgraph" id="namespacemutilities_a3a6d87070bf24e58257a843b5d84fd37_cgraph">
 <area shape="rect" id="node2" href="namespacemutilities.html#a385b8a94938c57f3606b1bd17c08e716" title="A function to test purpose. " alt="" coords="171,5,264,32"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="a3ae4bf4153c503c203cd38479d7fd9c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ae4bf4153c503c203cd38479d7fd9c7">&sect;&nbsp;</a></span>scaling_picard()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine mutilities::scaling_picard </td>
+          <td>(</td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>i</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>delta</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>deltap</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>eps</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>rho</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>omega</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>omega_min</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real*8&#160;</td>
+          <td class="paramname"><em>alpha</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Rescaling shape factor for underrelaxation. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">i</td><td>[in] Current Picard iteration </td></tr>
+    <tr><td class="paramname">delta</td><td>[in] Error between two Picard iteration </td></tr>
+    <tr><td class="paramname">deltap</td><td>[in] Previous error between two Picard iteration </td></tr>
+    <tr><td class="paramname">eps</td><td>[in] Tolerance value (closure criterion) </td></tr>
+    <tr><td class="paramname">rho</td><td>[in] Scaling factor  omega [in] Underrelaxation factor </td></tr>
+    <tr><td class="paramname">omega_min</td><td>[in/out] Minimum value of underrelaxation function </td></tr>
+    <tr><td class="paramname">alpha</td><td>[out] Shape factor for underrelaxation function </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section author"><dt>Author</dt><dd>Diego T. Volpatto </dd></dl>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="namespacemutilities_a3ae4bf4153c503c203cd38479d7fd9c7_icgraph.png" border="0" usemap="#namespacemutilities_a3ae4bf4153c503c203cd38479d7fd9c7_icgraph" alt=""/></div>
+<map name="namespacemutilities_a3ae4bf4153c503c203cd38479d7fd9c7_icgraph" id="namespacemutilities_a3ae4bf4153c503c203cd38479d7fd9c7_icgraph">
+<area shape="rect" id="node2" href="namespacemprocessor.html#a172249f4004da8b3b1395e75584c2921" title="Processor routine phase. " alt="" coords="176,13,331,39"/>
+<area shape="rect" id="node3" href="driver_8_f90.html#a6e3eeecf143064d98b191797e5da2c06" title="A FINite ELement program for general purpose problems. The present code is based in the book &quot;Finite ..." alt="" coords="379,13,425,39"/>
 </map>
 </div>
 

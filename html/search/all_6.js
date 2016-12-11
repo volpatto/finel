@@ -2,6 +2,7 @@ var searchData=
 [
   ['iin',['iin',['../namespacemio.html#a44537a1eec55ae4444d51a662fa6b6ce',1,'mio']]],
   ['infile',['infile',['../namespacemio.html#a4e0d20e8e7d856fbfdace9f8ee087709',1,'mio']]],
+  ['init_5fzcoef',['init_zcoef',['../namespacemtermo.html#a1e61cc27cbb546f1fd3cd03fbde6ebb9',1,'mtermo']]],
   ['io_2ef90',['io.F90',['../io_8_f90.html',1,'']]],
   ['iout',['iout',['../namespacemio.html#a495f43bc0ecfac2e0dc830f00aafb85c',1,'mio']]],
   ['ioute',['ioute',['../namespacemio.html#a231683b2a596cc13e5b932b0ff9b5a14',1,'mio']]],

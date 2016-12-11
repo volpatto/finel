@@ -134,7 +134,7 @@
                 !! @param nnodes    Number of nodes
                 !! @param flag      Flag for convergence checked
                 !! @author      Diego Volpatto
-                subroutine check_conv(u, uprev, nnodes, flag)
+                subroutine check_conv(u, uprev, nnodes, tol, norm, flag)
 
                     implicit none
 
@@ -145,8 +145,6 @@
                     integer :: i
                     real*8 :: norm, norm_up, norm_down, tol
 
-                    tol = 1.d-4
-
                     norm_up = 0.d0; norm_down = 0.d0
 
                     do i=1,nnodes
@@ -155,11 +153,58 @@
                     enddo
 
                     norm_up=dsqrt(norm_up); norm_down=dsqrt(norm_down)
-                    norm = norm_up/(1.d0+norm_down)
-                    write(*,*) "Stop criteria norm: ", norm
+                    norm = norm_up/norm_down
+                    !norm = norm_up/(1.d0+norm_down)
 
                     if (norm .le. tol) then
                     flag = .true.;!stop
+                    endif
+
+                endsubroutine
+
+                !> Computes underrelaxation factor for Picard iteration.
+                !! @param alpha     [in] Shape factor for underrelaxation function
+                !! @param delta     [in] Error between two Picard iteration
+                !! @param eps       [in] Tolerance value (closure criterion)
+                !! @param omega_min [in] Minimum value of underrelaxation function
+                !! @omega omega     [out] Underrelaxation factor
+                !! @author Diego T. Volpatto
+                subroutine factor_picard(alpha, delta, eps, omega_min, omega)
+
+                    implicit none
+
+                    real*8 :: alpha, delta, eps, omega_min, omega
+
+                    if (delta .gt. eps) then
+                    omega=omega_min+(1.d0-omega_min)*dexp(-alpha*(delta-eps))
+                    else
+                    omega = 1.0d0
+                    endif
+
+                endsubroutine
+
+                !> Rescaling shape factor for underrelaxation.
+                !! @param i         [in] Current Picard iteration
+                !! @param delta     [in] Error between two Picard iteration
+                !! @param deltap    [in] Previous error between two Picard iteration
+                !! @param eps       [in] Tolerance value (closure criterion)
+                !! @param rho       [in] Scaling factor
+                !! @omega omega     [in] Underrelaxation factor
+                !! @param omega_min [in/out] Minimum value of underrelaxation function
+                !! @param alpha     [out] Shape factor for underrelaxation function
+                !! @author Diego T. Volpatto
+                subroutine scaling_picard(i, delta, deltap, eps, rho,&
+                    omega, omega_min, alpha)
+
+                    implicit none
+
+                    integer :: i
+                    real*8 :: delta, deltap, eps, rho, omega, omega_min, alpha
+
+                    if (((delta-deltap) .gt. 0.d0) .and. (i.gt.1)) then
+                        omega_min = rho*omega_min
+                        alpha = -dlog((omega*rho-omega_min)/(1.d0-omega_min))/ &
+                            (delta-eps)
                     endif
 
                 endsubroutine
