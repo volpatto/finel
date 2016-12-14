@@ -149,6 +149,38 @@
 
             endsubroutine
 
+            !> Prints gradient 1D.
+            !! @param mesh_     A mesh structure
+            !! @param scalar_   A scalar structure
+            !! @param tstep     Time step index
+            !! @author  Diego T. Volpatto
+            subroutine print_grad(mesh_, scalar_, tstep)
+
+                use meshStructure
+                use scalarStructure
+
+                implicit none
+
+                type(mesh) :: mesh_
+                type(scalarStructureSystem) :: scalar_
+                integer :: tstep
+
+                integer :: i, j
+                character(len=50) :: gradFileDAT, tempstr
+
+                write(tempstr,'(i0)') tstep
+                gradFileDAT = "grad00"//trim(tempstr)//".dat"
+                open(unit=25,file=gradFileDAT)
+
+                do i=1,mesh_%nnodes
+                !write(isol,*) i, mesh_%x(1,i), scalar_%u(i)
+                write(25,*) i, (mesh_%x(j,i), j=1,mesh_%nsd),scalar_%grad(i)
+                enddo
+
+                close(25)
+
+            endsubroutine
+
             !> Prints the solution of scalar field in the csv format
             !! aiming to compatibility with Paraview post-processing.
             !! @param mesh_     A mesh structure

@@ -211,6 +211,7 @@
                 use mUtilities, only: check_conv, factor_picard
                 use mUtilities, only: scaling_picard
                 use mtermo, only: init_zcoef
+                use mpostProc
 
                 implicit none
 
@@ -225,6 +226,15 @@
                 ! Picard parameters
                 real*8 :: delta, omega, alpha, eps, omega_min, rho
                 real*8 :: deltap
+
+                ! Gas production parameters
+                real*8 :: cvol, fprev
+
+                cvol = 0.d0; fprev = 0.d0
+
+                !allocate(scalar_%prodvol(2,scalar_%nsteps))
+                !scalar_%prodvol = 0.d0; 
+                open(unit=45,file="prod.dat")
 
                 if (mesh_%nsd==1) call setint
                 if (mesh_%nsd==2) call setint2
@@ -308,8 +318,6 @@
                 ! Check if iteration converged
                 call check_conv(scalar_%u,scalar_%u_prev_it,mesh_%nnodes, &
                             eps, delta, flagit)
-                !write(*,*) scalar_%u(1:5)
-                !write(*,*) scalar_%u_prev_it(1:5)
 
                 ! Adaptative Picard procedures
                 ! ********************************************************
@@ -328,7 +336,7 @@
                 call scaling_picard(i, delta, deltap, eps, rho,&
                     omega, omega_min, alpha)
 
-                ! Update maximum change error
+                ! Update relative error
                 deltap = delta
 
                 ! ********************************************************
@@ -343,9 +351,19 @@
 
                 endif
 
+                ! Post-processing gradient
+                call gradeval(mesh_,scalar_)
+
+                ! Post-processing production
+                call mflux(mesh_,scalar_,cvol,fprev)
+                !scalar_%prodvol(1,tstep) = t
+                !scalar_%prodvol(2,tstep) = cvol
+                write(45,*) t, cvol
+
                 ! Record solution to a file
                 if (tstep .eq. scalar_%tprint(i)) then
                     call print_files(mesh_, scalar_, i)
+                    call print_grad(mesh_, scalar_,i)
                     i = i + 1
                 endif
 
@@ -353,6 +371,8 @@
                 scalar_%u_prev = scalar_%u; scalar_%u = 0.d0
 
                 enddo
+
+                close(45)
 
                 write(iout,*) "----------------------------------------"
                 write(*,*) "----------------------------------------"
@@ -362,6 +382,7 @@
 3333            format(1x,(a,1x),i0,(1x,a),(f0.10))
 4444            format(1x,(a,1x),i0,(1x,a))
 5555            format(1x,(a,1x),f0.10)
+6666            format(1x,(f0.10,1x),f0.10)
 
             endsubroutine
 

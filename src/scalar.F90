@@ -276,9 +276,9 @@
 
                     real*8 :: psi(mesh_%nen), dpsi(mesh_%nen), xl, dx
                     !real*8 :: eleft(n,n), eright(n)
-                    real*8 :: x1, x2, xl2
+                    real*8 :: x1, x2, xl2, Ri, Ro
                     real*8 :: xk, xb, xc, xf, pi, fac, uup, uu, graduu
-                    integer :: i, j, l, i1, i2
+                    integer :: i, j, l, i1, i2, tmax
                     integer :: inodes(mesh_%nen)
 
                     ! Physical parameters declaration
@@ -294,6 +294,10 @@
                     p0 = 2.0d7
                     alpha = phi
                     beta = kappa/mu
+                    !Ri = minval(mesh_%x(1,:)); 
+                    Ro = maxval(mesh_%x(1,:))
+                    Ri = mesh_%x(1,1)
+                    tmax = maxval(scalar_%tprint)
 
                     xk = scalar_%mat(mesh_%mat(nel),1); !print*, xk
                     xk = beta
@@ -315,14 +319,10 @@
                     do l=1,mesh_%nintp
                         xl = x1+(1.d0+xi(l,mesh_%nintp))*dx
                         !print*, xl
-                        !xl = dx
-                        !xf = dsin(pi*xl)*dcos(pi*xl)/xl
-                        !xf = (4.d0/3.d0)*xl
-                        !xf = xl
-                        xf = (5.5d5/(minval(mesh_%x)-maxval(mesh_%x)))* &
-                            (xl - maxval(mesh_%x))* &
-                            (dexp(-1.d-1*t/(scalar_%nsteps*maxval(scalar_%tprint))))
-                        !xf = xi(l,mesh_%nintp)
+                        xf = (5.5d5/(Ri-Ro))* &
+                            (xl - Ro)* &
+                            (dexp(-1.0d-1*t/(scalar_%nsteps*tmax)))
+                        !xf = 1.d0
                         call shpf1d(xi(l,mesh_%nintp),mesh_%nen,psi,dpsi)
                         fac = w(l,mesh_%nintp)*dx
                         if (scalar_%transient .eq. 0) then

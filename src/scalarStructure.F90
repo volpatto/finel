@@ -22,6 +22,9 @@
                 real*8 :: dt !< Time step
                 integer :: linflag !< Flag to indicate if problem is linear or not
 
+                real*8, allocatable :: grad(:),incidence(:),massflux(:)
+                real*8, allocatable :: prodvol(:,:)
+
             end type
 
             contains
@@ -37,6 +40,9 @@
                 integer :: n
 
                 allocate(scalar_%u(n)); scalar_%u = 0.0d0
+                allocate(scalar_%grad(n)); scalar_%grad = 0.0d0
+                allocate(scalar_%massflux(n)); scalar_%massflux = 0.0d0
+                allocate(scalar_%incidence(n)); scalar_%incidence = 0.0d0
                 if (scalar_%transient .eq. 1) then 
                 allocate(scalar_%u_prev(n)); scalar_%u_prev = 0.0d0
                 endif

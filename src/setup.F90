@@ -148,7 +148,7 @@
                 write(iout,*) "Number of time's steps:",scalar_%nsteps
                 write(iout,*) "Total time:",scalar_%nsteps*scalar_%dt
                 write(*,*) "Number of time's steps:",scalar_%nsteps
-                write(*,*) "Total time:",scalar_%nsteps**scalar_%dt
+                write(*,*) "Total time:",scalar_%nsteps*scalar_%dt
 
                 ! Reads time steps index that solution will be printed
                 keyword_name = "tprint"
