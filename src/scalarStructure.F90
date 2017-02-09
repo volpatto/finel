@@ -21,9 +21,11 @@
                 integer :: nsteps !< Number of time steps
                 real*8 :: dt !< Time step
                 integer :: linflag !< Flag to indicate if problem is linear or not
+                integer :: stabm !< Flag to indicate which numerical method is employed
 
-                real*8, allocatable :: grad(:),incidence(:),massflux(:)
-                real*8, allocatable :: prodvol(:,:)
+                real*8, allocatable :: grad(:), & !< Post-processed gradient
+                                    incidence(:), & !< Node incidence to grad computation
+                                    massflux(:) !< Mass flux over mesh nodes
 
             end type
 

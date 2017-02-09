@@ -26,7 +26,9 @@
                 integer*4, allocatable :: si(:),& !< Opposite i-side
                                     sj(:),& !< Opposite j-side
                                     sk(:) !< Opposite k-side
-                character(50) :: geokind, filename
+                character(50) :: geokind, & !< Coordinate frame kind
+                                filename, & !< Mesh file
+                                meshgen !< Mesh generator program
             end type
 
             contains
@@ -66,7 +68,7 @@
 
                     n = meshStrct%nelems
 
-                    allocate(meshStrct%gnode(n+1,3)); meshStrct%gnode = 0
+                    allocate(meshStrct%gnode(n+1,meshStrct%nen)); meshStrct%gnode = 0
                     allocate(meshStrct%ei(n+1)); meshStrct%ei = 0
                     allocate(meshStrct%ej(n+1)); meshStrct%ej = 0
                     allocate(meshStrct%ek(n+1)); meshStrct%ek = 0

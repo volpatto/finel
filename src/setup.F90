@@ -22,7 +22,7 @@
                 type(scalarStructureSystem) :: scalar_
                 character(len=50) :: keyword_name, default_title_value
                 character(len=50) :: default_file_value,default_geo_value
-                character(len=50) :: default_filename
+                character(len=50) :: default_filename, default_meshgen
                 integer :: i, j
 
                 call readInputFileDS
@@ -46,6 +46,19 @@
                 write(*,1111) "Writing solution in format ", file_format
                 write(*,*)
 
+                ! Reads what program generate the mesh
+                keyword_name = "mesh_gen"
+                default_file_value = "easymesh"
+                call readStringKeywordValue(keyword_name,mesh_%meshgen,&
+                            default_meshgen)
+                mesh_%meshgen = trim(mesh_%meshgen)
+                if ((mesh_%meshgen.ne."easymesh").and.(mesh_%meshgen.ne."triangle")) then
+                    write(iout,*) "Incompatible mesh generator"
+                    write(*,*) "Incompatible mesh generator"
+                    write(*,*)
+                    stop
+                endif
+
                 ! Reads number os spatial dimensions
                 keyword_name = "nsd"
                 call readIntegerKeywordValue(keyword_name,mesh_%nsd, 0_4)
@@ -66,17 +79,39 @@
                 write(*,*)
                 endif
 
+                ! Reads if stabilized methods are employed
+                keyword_name = "stabilizing"
+                call readIntegerKeywordValue(keyword_name,scalar_%stabm,0)
+                write(iout,*) "Numerical method:"
+                write(iout,*) "(0) Standard Galerkin (1) GGLS:",scalar_%stabm
+                write(iout,*)
+                write(*,*) "Numerical method:"
+                write(*,*) "(0) Standard Galerkin (1) GGLS:",scalar_%stabm
+                write(*,*)
+
                 ! Reads mesh input file case name
                 keyword_name = "filename"
                 default_filename = "case1"
                 call readStringKeywordValue(keyword_name,mesh_%filename,default_filename)
-                write(iout,*) "Mesh generator: EasyMesh"
+                write(iout,1111) "Mesh generator: ", mesh_%meshgen
+                if (mesh_%meshgen .eq. "easymesh") then
                 write(iout,2222) 'Nodes file: '//trim(mesh_%filename)//'.n'
                 write(iout,2222) 'Element and conectivity file: '//trim(mesh_%filename)//'.e'
+                endif
+                if (mesh_%meshgen .eq. "triangle") then
+                write(iout,2222) 'Nodes file: '//trim(mesh_%filename)//'.node'
+                write(iout,2222) 'Element and conectivity file: '//trim(mesh_%filename)//'.ele'
+                endif
                 write(iout,*)
-                write(*,*) "Mesh generator: EasyMesh"
+                write(*,1111) "Mesh generator: ", mesh_%meshgen
+                if (mesh_%meshgen .eq. "easymesh") then
                 write(*,2222) 'Nodes file: '//trim(mesh_%filename)//'.n'
                 write(*,2222) 'Element and conectivity file: '//trim(mesh_%filename)//'.e'
+                endif
+                if (mesh_%meshgen .eq. "triangle") then
+                write(*,2222) 'Nodes file: '//trim(mesh_%filename)//'.node'
+                write(*,2222) 'Element and conectivity file: '//trim(mesh_%filename)//'.ele'
+                endif
                 write(*,*); !stop
 
                 ! Reads quadrature kind
@@ -101,6 +136,14 @@
                 write(iout,*) "Number of element's nodes:",mesh_%nen
                 write(iout,*)
                 write(*,*) "Number of element's nodes:",mesh_%nen
+                write(*,*)
+
+                ! Reads number of element's nodes
+                keyword_name = "linflag"
+                call readIntegerKeywordValue(keyword_name,scalar_%linflag, 1)
+                write(iout,*) "(1) Linear analysis (0) Nonlinear:",scalar_%linflag
+                write(iout,*)
+                write(*,*) "(1) Linear analysis (0) Nonlinear:",scalar_%linflag
                 write(*,*)
 
                 ! Reads number of materials

@@ -65,11 +65,16 @@
                 implicit none
                 
                 type(mesh)          :: mesh_
-                integer             :: i
+                integer             :: i, dummy_nsd, dummy_atb, dummy_bdmrk
                 character*8         :: node
 
+                if (mesh_%meshgen .eq. "easymesh") then
                 open(unit=100, file=trim(mesh_%filename)//'.n')
                 read(100,*) mesh_%nnodes
+                else if (mesh_%meshgen .eq. "triangle") then
+                open(unit=100, file=trim(mesh_%filename)//'.node')
+                read(100,*) mesh_%nnodes, dummy_nsd, dummy_atb, dummy_bdmrk
+                endif
                 !print*, mesh_%nnodes
 
                 call mallocNodes(mesh_)
@@ -93,15 +98,26 @@
                 implicit none
                 
                 type(mesh)          :: mesh_
-                integer             :: i
+                integer             :: i, dummy_nen, dummy_atb, j
                 character*8         :: elem
 
+                if (mesh_%meshgen .eq. "easymesh") then
                 open(unit=100, file=trim(mesh_%filename)//'.e')
                 read(100,*) mesh_%nelems
+                else if (mesh_%meshgen .eq. "triangle") then
+                open(unit=100, file=trim(mesh_%filename)//'.ele')
+                read(100,*) mesh_%nelems, dummy_nen, dummy_atb
+                if (dummy_nen .ne. mesh_%nen) then
+                    write(iout,*) "Unmatched number of nen (mesh)"
+                    write(*,*) "Unmatched number of nen (mesh)"
+                    stop
+                endif
+                endif
                 !print*, mesh_%nelems
 
                 call mallocElem(mesh_)
 
+                if (mesh_%meshgen .eq. "easymesh") then
                 do i=1,mesh_%nelems
                     read(100,*) elem, & 
                         mesh_%gnode(i,1), mesh_%gnode(i,2), mesh_%gnode(i,3), &
@@ -112,6 +128,18 @@
                         mesh_%gnode(i,1), mesh_%gnode(i,2), mesh_%gnode(i,3), &
                     mesh_%xV(i), mesh_%yV(i), mesh_%mat(i)
                 enddo
+
+                else if (mesh_%meshgen .eq. "triangle") then
+                do i=1,mesh_%nelems
+                    read(100,*) elem, & 
+                        (mesh_%gnode(i,j), j=1,dummy_nen)!, &
+                        mesh_%ei(i)=-1; mesh_%ej(i)=-1; mesh_%ek(i)=-1
+                        mesh_%si(i)=-1; mesh_%sj(i)=-1; mesh_%sk(i)=-1
+                        mesh_%xV(i)=-1; mesh_%yV(i)=-1; mesh_%mat(i)=-1
+                    write(ioute,*) i, & 
+                        (mesh_%gnode(i,j), j=1,dummy_nen) 
+                enddo
+                endif
 
                 close(100)
 
@@ -283,6 +311,7 @@
                 write(isolvtk,'(a)') "CELLS "//trim(tempstr)//" "//trim(tempstr2)
                 do i=1,mesh_%nelems
                 inodes=mesh_%gnode(i,:); !print*, inodes;
+                if (mesh_%meshgen .eq. "triangle") inodes=inodes-1
                 write(isolvtk,1000) mesh_%nen, (inodes(j),j=1,mesh_%nen)
                 enddo
                 write(isolvtk,*) 

@@ -209,4 +209,26 @@
 
                 endsubroutine
 
+                !> Computes the larger side of a triangle by means of
+                !! your vertex coordinates.
+                !! @param x     Vertex coordinates
+                !! @param hk    Max side value
+                !! @author Diego Volpatto
+                subroutine hk3_2d(x,hk)
+
+                    implicit none
+
+                    real*8 :: x(2,3)
+                    real*8 :: side(3), hk
+
+                    side(1) = dsqrt( (x(1,2) - x(1,1))**2.d0 +&
+                        (x(2,2) - x(2,1))**2.d0   )
+                    side(2) = dsqrt( (x(1,3) - x(1,2))**2.d0 +&
+                        (x(2,3) - x(2,2))**2.d0   )
+                    side(3) = dsqrt( (x(1,1) - x(1,3))**2.d0 +&
+                        (x(2,1) - x(2,3))**2.d0   )
+                    hk = maxval(side)
+                    
+                endsubroutine
+
         end module

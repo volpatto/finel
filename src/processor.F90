@@ -17,6 +17,7 @@
                 use scalarStructure
                 use mscalar,    only: localElem, localElem2D
                 use mscalar,    only: fracElem
+                use mscalar,    only: stabGGLS
 
                 implicit none
 
@@ -28,11 +29,13 @@
                 do nel = 1,mesh_%nelems
 
                     if (mesh_%nsd==1) then
-                    !call localElem(mesh_, scalar_, nel)
-                    call fracElem(mesh_, scalar_, nel, t)
+                    call localElem(mesh_, scalar_, nel)
+                    !call localElemGGLS(mesh_, scalar_, nel)
+                    !call fracElem(mesh_, scalar_, nel, t)
                     else
                     call localElem2D(mesh_, scalar_, nel)
                     endif
+                    if (scalar_%stabm .eq. 1) call stabGGLS(mesh_,scalar_,nel)
                     call assmb(mesh_, scalar_, nel)
 
                 enddo
@@ -59,7 +62,8 @@
 
                 do i=1,mesh_%nen
 
-                   ig = mesh_%gnode(nel,i)+1 
+                   ig = mesh_%gnode(nel,i) 
+                   if (mesh_%meshgen .eq. "easymesh") ig=ig+1 
                    
                    ! Assemble global load vector
                    scalar_%rhsys(ig) = scalar_%rhsys(ig) + &
@@ -67,7 +71,8 @@
 
                    do j=1,mesh_%nen
 
-                    jg = mesh_%gnode(nel,j)+1
+                    jg = mesh_%gnode(nel,j)
+                    if (mesh_%meshgen .eq. "easymesh") jg=jg+1 
                     
                     ! Assemble global stiffness matrix
                     scalar_%lhsys(ig,jg) = scalar_%lhsys(ig,jg) + &
@@ -242,7 +247,7 @@
                 call init_zcoef
 
                 ! Set the initial condition
-                scalar_%u_prev = 2.0d7
+                !scalar_%u_prev = 2.0d7
 
                 write(iout,*) "Processor procedures start:"
                 write(*,*) "Processor procedures start:"
@@ -255,12 +260,14 @@
 
                 write(iout,*) "----------------------------------------"
                 write(*,*) "----------------------------------------"
+                if (scalar_%transient .eq. 1) then
                 write(iout,3333) "Time step = ", tstep, "t = ", scalar_%dt*tstep
                 write(*,3333) "Time step =", tstep, "t =", scalar_%dt*tstep
                 write(iout,*)
                 write(*,*)
+                endif
 
-                t = scalar_%dt*tstep
+                t = scalar_%dt*tstep; !stop
 
                 if (scalar_%linflag .eq. 1) then
                 ! Linear problem mount and solver procedures
@@ -352,12 +359,10 @@
                 endif
 
                 ! Post-processing gradient
-                call gradeval(mesh_,scalar_)
+                call gradeval1D(mesh_,scalar_)
 
                 ! Post-processing production
-                call mflux(mesh_,scalar_,cvol,fprev)
-                !scalar_%prodvol(1,tstep) = t
-                !scalar_%prodvol(2,tstep) = cvol
+                call mflux1D(mesh_,scalar_,cvol,fprev)
                 write(45,*) t, cvol
 
                 ! Record solution to a file
