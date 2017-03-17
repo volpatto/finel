@@ -42,6 +42,45 @@
 
             endsubroutine
 
+            !> Form and assemble Ku = F system for the
+            !! tracer transport system.
+            !! @param mesh_     [in/out] A mesh structure
+            !! @param scalar_   [in/out] A scalar structure
+            !! @param scalar2_  [in/out] Another scalar structure
+            !! @param t         [in] Current simulation time
+            !! @author Diego Volpatto
+            subroutine formKFTracer(mesh_, scalar_, scalar2_, t)
+
+                use meshStructure
+                use scalarStructure
+                use mscalar,    only: localElemCDR2D
+                use mscalar,    only: fracElem
+                use mscalar,    only: stabGGLS
+
+                implicit none
+
+                type(mesh) :: mesh_
+                type(scalarStructureSystem) :: scalar_, scalar2_
+                integer :: i1, i2, i3, nel
+                real*8 :: t
+
+                do nel = 1,mesh_%nelems
+
+                    if (mesh_%nsd==1) then
+                    !call localElem(mesh_, scalar_, nel)
+                    stop "Invalid input dimension"
+                    !call localElemGGLS(mesh_, scalar_, nel)
+                    !call fracElem(mesh_, scalar_, nel, t)
+                    else
+                    call localElemCDR2D(mesh_, scalar_, scalar2_, nel)
+                    endif
+                    if (scalar_%stabm .eq. 1) call stabGGLS(mesh_,scalar_,nel)
+                    call assmb(mesh_, scalar_, nel)
+
+                enddo
+
+            endsubroutine
+
             !> Assemble element stiffness matrix and load vector to
             !! global stiffness matrix and load vector, respectively.
             !! @param mesh_     A mesh structure
@@ -217,6 +256,7 @@
                 use mUtilities, only: scaling_picard
                 use mtermo, only: init_zcoef
                 use mpostProc
+                use msolver
 
                 implicit none
 
@@ -390,5 +430,156 @@
 6666            format(1x,(f0.10,1x),f0.10)
 
             endsubroutine
+
+            !> Processor routine phase for the Tracer problem.
+            !! @param mesh_     A mesh structure
+            !! @param scalar_   A scalar structure
+            !! @author Diego T. Volpatto
+            subroutine processorTracer(mesh_, scalar_, scalar2_)
+
+                use meshStructure
+                use scalarStructure
+                use mshapeFunctions, only: setint, setint2
+                use mIO
+                use mUtilities, only: check_conv, factor_picard
+                use mUtilities, only: scaling_picard
+                use mtermo, only: init_zcoef
+                use mpostProc
+                use msolver
+
+                implicit none
+
+                type(mesh) :: mesh_
+                type(scalarStructureSystem) :: scalar_, scalar2_
+                
+                real*8 :: t1, t2, t
+                integer :: tstep, i, j
+                integer, parameter :: niter = 5000
+                logical :: flagit
+
+                !allocate(scalar_%prodvol(2,scalar_%nsteps))
+                !scalar_%prodvol = 0.d0; 
+                !open(unit=45,file="prod.dat")
+
+                if (mesh_%nsd==1) call setint
+                if (mesh_%nsd==2) call setint2
+                
+                !call init_zcoef
+
+                ! Set the initial condition
+                !scalar_%u_prev = 2.0d7
+
+                write(iout,*) "Processor procedures start:"
+                write(*,*) "Processor procedures start:"
+                write(iout,*)
+                write(*,*)
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                ! Solve hydrodynamics problem
+
+                write(iout,*) "----------------------------------------"
+                write(*,*) "----------------------------------------"
+                write(iout,*) "Solving Hydrodynamics system:"
+                write(*,*) "Solving Hydrodynamics system:"
+                write(iout,*)
+                write(*,*)
+
+                do tstep = 1,scalar_%nsteps
+
+                call cpu_time(t1)
+                call formKF(mesh_, scalar_,t)
+                call applybc(mesh_, scalar_)
+                call cpu_time(t2)
+                write(iout,*) "Time elapsed (s) to mount system Ku=F:", (t2-t1)
+                write(*,*) "Time elapsed (s) to mount system Ku=F:", (t2-t1)
+
+                call cpu_time(t1)
+                !write(*,*) scalar_%lhsys(1:6,5);
+                call solver(mesh_, scalar_)
+                call cpu_time(t2)
+                write(iout,*) "Time elapsed (s) to solve system Ku=F:", (t2-t1)
+                write(*,*) "Time elapsed (s) to solve system Ku=F:", (t2-t1)
+                
+                ! Clear stiffness matrix and load vector
+                scalar_%lhsys = 0.d0; scalar_%rhsys = 0.d0
+
+                ! Record solution to a file
+                if (tstep .eq. scalar_%tprint(i)) then
+                    call print_files(mesh_, scalar_, i)
+                    i = i + 1
+                endif
+
+                enddo
+
+                write(iout,*) "Hydrodynamics system solved."
+                write(*,*) "Hydrodynamics system solved."
+                write(iout,*) "----------------------------------------"
+                write(*,*) "----------------------------------------"
+                write(iout,*)
+                write(*,*)
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                ! Begin loop in time to solve transport problem
+                write(iout,*) "Solving Transport system:"
+                write(*,*) "Solving Transport system:"
+                write(iout,*)
+                write(*,*)
+
+                i = 1
+                do tstep = 1,scalar2_%nsteps
+
+                write(iout,*) "----------------------------------------"
+                write(*,*) "----------------------------------------"
+                if (scalar2_%transient .eq. 1) then
+                write(iout,3333) "Time step = ", tstep, "t = ", scalar2_%dt*tstep
+                write(*,3333) "Time step =", tstep, "t =", scalar2_%dt*tstep
+                write(iout,*)
+                write(*,*)
+                endif
+
+                t = scalar2_%dt*tstep; !stop "2"
+
+                ! Linear problem mount and solver procedures
+
+                call cpu_time(t1)
+                call formKFTracer(mesh_, scalar2_, scalar_, t)
+                call applybc(mesh_, scalar2_)
+                !write(*,*) scalar2_%lhsys(1:6,4); stop
+                call cpu_time(t2)
+                write(iout,*) "Time elapsed (s) to mount system Ku=F:", (t2-t1)
+                write(*,*) "Time elapsed (s) to mount system Ku=F:", (t2-t1)
+
+                call cpu_time(t1)
+                call solver(mesh_, scalar2_)
+                call cpu_time(t2)
+                write(iout,*) "Time elapsed (s) to solve system Ku=F:", (t2-t1)
+                write(*,*) "Time elapsed (s) to solve system Ku=F:", (t2-t1)
+                
+                ! Clear stiffness matrix and load vector
+                scalar2_%lhsys = 0.d0; scalar2_%rhsys = 0.d0
+
+                ! Record solution to a file
+                if (tstep .eq. scalar2_%tprint(i)) then
+                    call print_files(mesh_, scalar2_, i)
+                    i = i + 1
+                endif
+
+                ! Update previous solution
+                scalar2_%u_prev = scalar2_%u; scalar2_%u = 0.d0
+
+                enddo
+
+                write(iout,*) "----------------------------------------"
+                write(*,*) "----------------------------------------"
+                write(iout,*)
+                write(*,*)
+
+3333            format(1x,(a,1x),i0,(1x,a),(f0.10))
+4444            format(1x,(a,1x),i0,(1x,a))
+5555            format(1x,(a,1x),f0.10)
+6666            format(1x,(f0.10,1x),f0.10)
+
+            endsubroutine
+
 
         endmodule

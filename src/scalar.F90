@@ -168,9 +168,9 @@
                     endif
 
                     xk = scalar_%mat(mesh_%mat(nel),1); !print*, xk
-                    xk = 1.0d-8
+                    xk = 1.0d0
                     xb = scalar_%mat(mesh_%mat(nel),2); !print*, xb
-                    xb = 1.0d0
+                    xb = 0.0d0
                     xc = scalar_%mat(mesh_%mat(nel),3); !print*, xc
                     xc = 0.0d0
                     xf = 0.0
@@ -214,7 +214,7 @@
                         ! Accumulate integration point values of integrals
                         fac=detJ*w(l)
                         !xf=dsin(pi*mesh_%xV(nel))*dsin(pi*mesh_%yV(nel))
-                        xf=1.d0
+                        xf=0.d0
                         !xf=mesh_%xV(nel)
                         if (scalar_%transient .eq. 0) then
                         ! Compute load vector - rhs
@@ -228,7 +228,7 @@
                            xb*psi(i)*psi(j))
                         enddo
                         enddo
-                        else 
+                        else
                         ! Compute previous solution contribution
                         uup = 0.d0
                         do i=1,mesh_%nen
@@ -240,19 +240,13 @@
                                         scalar_%dt*xf*psi(i)*fac+ &
                                         fac*psi(i)*uup
                         ! Compute stiffness matrix - lhs
-                        do j=i,mesh_%nen
+                        do j=1,mesh_%nen
                         scalar_%lhelem(i,j)=scalar_%lhelem(i,j)+ &
                            scalar_%dt*fac*(xk*(dpsix(i)*dpsix(j)+dpsiy(i)*dpsiy(j))+&
                            xb*psi(i)*psi(j))
                         enddo
                         enddo
                         endif
-                    enddo
-                    ! Calculate lower symmetric part of EK
-                    do i=1,mesh_%nen
-                    do j=1,i
-                    scalar_%lhelem(i,j) = scalar_%lhelem(j,i)
-                    enddo
                     enddo
                     deallocate(xi); deallocate(w)
                 end subroutine
@@ -575,6 +569,170 @@
                 endif
 
 1234            format(1(1x,(a),1x,(i0)),4(1x,(a),1x,(f0.5)))
+                end subroutine
+                
+                !> Computes a master element contribution in a Convection-Diffusion-Reaction 
+                !! problem with a given velocity -- 2D.
+                !! @param mesh_    [in/out] A mesh structure
+                !! @param scalar_  [in/out] A scalar structure
+                !! @param nel      [in] Index of current element
+                !! @author Diego Volpatto
+                subroutine localElemCDR2D(mesh_, scalar_, scalar2_, nel)
+
+                    use mshapeFunctions, only: xit, xiq, wt, wq, shpf2d
+                    use meshStructure
+                    use scalarStructure
+
+                    implicit none
+
+                    !integer :: n, ni, mat
+                    type(mesh) :: mesh_
+                    type(scalarStructureSystem) :: scalar_, scalar2_
+                    integer :: nel
+
+                    real*8 :: psi(mesh_%nen), dpsi(mesh_%nsd,mesh_%nen)
+                    real*8 :: dxds(2,2), dsdx(2,2), detJ, fac
+                    real*8 :: dpsix(mesh_%nen), dpsiy(mesh_%nen)
+                    real*8, allocatable :: xi(:,:), w(:)
+                    !real*8 :: eleft(n,n), eright(n)
+                    real*8 :: xl(mesh_%nsd)
+                    real*8 :: xk, xb, xc, xf, pi
+                    integer :: i, j, l, k
+                    integer :: inodes(mesh_%nen)
+                    real*8 :: xnodes(mesh_%nsd,mesh_%nen)
+                    real*8 :: uup, vx, vy, gradpx, gradpy
+                    real*8, parameter :: kappa = 1.0d0
+                    real*8, parameter :: phi = 0.50
+
+                    pi = 4.0d0*datan(1.0d0)
+
+                    ! Setting global nodes vector to local
+                    inodes=mesh_%gnode(nel,:); !print*, inodes;i
+                    if (mesh_%meshgen .eq. "easymesh") inodes=inodes+1 
+                    do i=1,mesh_%nsd
+                    do j=1,mesh_%nen
+                    xnodes(i,j) = mesh_%x(i,inodes(j))
+                    enddo
+                    enddo
+
+                    ! Setting quadrature points and weights due to
+                    ! element geometry
+                    if (mesh_%nen==3 .or. mesh_%nen==6) then 
+                        allocate(xi(2,4)); xi=xit; 
+                        allocate(w(4)); w=wt; 
+                    endif
+                    if (mesh_%nen==4 .or. mesh_%nen==8 .or.mesh_%nen==9) then 
+                        allocate(xi(2,9)); xi=xiq; 
+                        allocate(w(9)); w=wq; 
+                    endif
+
+                    !xk = scalar_%mat(mesh_%mat(nel),1); !print*, xk
+                    xk = 1.0d-2
+                    !xb = scalar_%mat(mesh_%mat(nel),2); !print*, xb
+                    xb = 0.0d0
+                    !xc = scalar_%mat(mesh_%mat(nel),3); !print*, xc
+                    xc = 0.0d0
+                    xf = 0.0
+                    ! Advection velocity components
+                    vx = 0.d0; vy = 0.d0
+
+                    ! Initialize element arrays
+                    scalar_%lhelem = 0.0d0; scalar_%rhelem = 0.d0
+                    psi = 0.0d0; dpsi = 0.d0
+
+                    ! Begin integration loop
+                    do l=1,mesh_%nintp
+                        ! Gauss point to integrate source/sink term
+                        do i=1,mesh_%nsd
+                        xl(i)=xi(i,l)
+                        enddo
+                        !xf=dsin(pi*mesh_%xV(nel))*dsin(pi*mesh_%yV(nel))
+                        !xf = 1.0d0
+                        call shpf2d(xi(mesh_%nsd,l),mesh_%nen,psi,dpsi)
+                        ! Calculate DXDS
+                        do i=1,2
+                        do j=1,2
+                        dxds(i,j) = 0.0d0
+                        do k=1,mesh_%nen
+                            dxds(i,j) = dxds(i,j)+dpsi(j,k)*xnodes(i,k)
+                        enddo
+                        enddo
+                        enddo
+                        ! Calculate DSDX
+                        detJ = dxds(1,1)*dxds(2,2)-dxds(1,2)*dxds(2,1)
+                        if (detJ .le. 0.0d0) then
+                            print*, "Bad Jacobian =", detJ, "Elem =",nel; stop
+                        endif
+                        dsdx(1,1)=dxds(2,2)/detJ
+                        dsdx(2,2)=dxds(1,1)/detJ
+                        dsdx(1,2)=-dxds(1,2)/detJ
+                        dsdx(2,1)=-dxds(2,1)/detJ
+                        ! Calculate d(psi)/dx
+                        do i=1,mesh_%nen
+                        dpsix(i)=dpsi(1,i)*dsdx(1,1)+dpsi(2,i)*dsdx(2,1)
+                        dpsiy(i)=dpsi(1,i)*dsdx(1,2)+dpsi(2,i)*dsdx(2,2)
+                        enddo
+                        ! Accumulate integration point values of integrals
+                        fac=detJ*w(l)
+                        !xf=dsin(pi*mesh_%xV(nel))*dsin(pi*mesh_%yV(nel))
+                        xf=0.d0
+                        !xf=mesh_%xV(nel)
+                        if (scalar_%transient .eq. 0) then
+                        ! Compute velocity by post-processing
+                        gradpx = 0.d0
+                        gradpy = 0.d0
+                        do i=1,mesh_%nen
+                        gradpx = gradpx + dpsix(i)*scalar2_%u(inodes(i))
+                        gradpy = gradpy + dpsiy(i)*scalar2_%u(inodes(i))
+                        enddo
+                        vx = -kappa*gradpx; vy = -kappa*gradpy
+                        ! Compute load vector - rhs
+                        do i=1,mesh_%nen
+                        scalar_%rhelem(i)=scalar_%rhelem(i)+ &
+                                        xf*psi(i)*fac
+                        ! Compute stiffness matrix - lhs
+                        do j=i,mesh_%nen
+                        scalar_%lhelem(i,j)=scalar_%lhelem(i,j)+ &
+                           fac*(xk*(dpsix(i)*dpsix(j)+dpsiy(i)*dpsiy(j))+&
+			   psi(i)*(vx*dpsix(j)+vy*dpsiy(j)) + &
+                           xb*psi(i)*psi(j))
+                        enddo
+                        enddo
+                        else
+                        ! Compute previous solution contribution
+                        uup = 0.d0
+                        do i=1,mesh_%nen
+                        uup = uup + psi(i)*scalar_%u_prev(inodes(i))
+                        enddo
+                        ! Compute velocity by post-processing
+                        gradpx = 0.d0
+                        gradpy = 0.d0
+                        do i=1,mesh_%nen
+                        gradpx = gradpx + dpsix(i)*scalar2_%u(inodes(i))
+                        gradpy = gradpy + dpsiy(i)*scalar2_%u(inodes(i))
+                        enddo
+                        vx = -kappa*gradpx; vy = -kappa*gradpy
+                        !write(*,*) vx, vy
+                        ! Compute load vector - rhs
+                        do i=1,mesh_%nen
+                        scalar_%rhelem(i)=scalar_%rhelem(i)+ &
+                                        scalar_%dt*xf*psi(i)*fac+ &
+                                        fac*phi*psi(i)*uup
+                        ! Compute stiffness matrix - lhs
+                        do j=1,mesh_%nen
+                        scalar_%lhelem(i,j)=scalar_%lhelem(i,j)+ &
+                           scalar_%dt*fac*(xk*(dpsix(i)*dpsix(j)+dpsiy(i)*dpsiy(j))+&
+			   psi(i)*(vx*dpsix(j)+vy*dpsiy(j)) + &
+                           xb*psi(i)*psi(j)) + &
+                           phi*psi(i)*psi(j)*fac
+                        enddo
+                        enddo
+                        endif
+                    enddo
+                    !do i=1,mesh_%nen
+                        !write(*,*) (scalar_%lhelem(i,j),j=1,mesh_%nen)
+                    !enddo
+                    deallocate(xi); deallocate(w)
                 end subroutine
 
         end module

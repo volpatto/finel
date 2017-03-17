@@ -24,13 +24,15 @@
           implicit none
 
           type(mesh) :: malha
-          type(scalarStructureSystem) :: potencial
+          !type(scalarStructureSystem) :: potencial
+          type(scalarStructureSystem) :: hydro, tracer
           real*8 :: t1, t2
 
           call cpu_time(t1)
           call openFiles
-          call preprocessor(malha, potencial)
-          call processor(malha, potencial)
+          call preprocessorTracer(malha, hydro, tracer)
+          !call processor(malha, potencial)
+          call processorTracer(malha, hydro, tracer)
           call cpu_time(t2)
           write(iout,*) "Execution elapsed time in minutes:", (t2-t1)/60.d0
           write(*,*) "Execution elapsed time in minutes:", (t2-t1)/60.d0

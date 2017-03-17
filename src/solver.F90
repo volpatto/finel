@@ -87,4 +87,27 @@
 
             endsubroutine
 
+            subroutine solverGaussSeidel(A, x, b, x0, n)
+
+                implicit none
+                
+                real*8 :: A(n,n), x(n), b(n), x0(n)
+                integer :: n
+		integer :: k
+		integer, parameter :: kmax = 1.d2
+                real*8 :: sum_ax
+
+		x = x0
+		do k=1,kmax
+		!do i=1,n
+			!sum_ax = 0.d0
+			!do j=1,n
+			     !if (j .ne. i) sum_ax = A(i,j)*x(j)
+			!enddo
+			!x(i) = (b(i)-sum_ax)/A(i,i)
+		!enddo
+                if (k .eq. kmax) stop "kmax";
+		enddo
+                
+            endsubroutine
         endmodule
