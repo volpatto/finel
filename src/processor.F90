@@ -287,7 +287,7 @@
                 call init_zcoef
 
                 ! Set the initial condition
-                !scalar_%u_prev = 2.0d7
+                !scalar_%u_prev = 1.0d0
 
                 write(iout,*) "Processor procedures start:"
                 write(*,*) "Processor procedures start:"

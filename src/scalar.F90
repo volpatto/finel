@@ -168,12 +168,12 @@
                     endif
 
                     xk = scalar_%mat(mesh_%mat(nel),1); !print*, xk
-                    xk = 1.0d0
+                    xk = 1.0d-8
                     xb = scalar_%mat(mesh_%mat(nel),2); !print*, xb
-                    xb = 0.0d0
+                    xb = 1.0d0
                     xc = scalar_%mat(mesh_%mat(nel),3); !print*, xc
                     xc = 0.0d0
-                    xf = 0.0
+                    xf = 0.0d0
 
                     ! Initialize element arrays
                     scalar_%lhelem = 0.0d0; scalar_%rhelem = 0.d0
@@ -214,8 +214,9 @@
                         ! Accumulate integration point values of integrals
                         fac=detJ*w(l)
                         !xf=dsin(pi*mesh_%xV(nel))*dsin(pi*mesh_%yV(nel))
-                        xf=0.d0
-                        !xf=mesh_%xV(nel)
+                        xf=1.d0
+                        !xf=mesh_%yV(nel)
+                        !print*, xf
                         if (scalar_%transient .eq. 0) then
                         ! Compute load vector - rhs
                         do i=1,mesh_%nen
