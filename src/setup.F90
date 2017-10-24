@@ -84,10 +84,10 @@
                 keyword_name = "stabilizing"
                 call readIntegerKeywordValue(keyword_name,scalar_%stabm,0)
                 write(iout,*) "Numerical method:"
-                write(iout,*) "(0) Standard Galerkin (1) GGLS:",scalar_%stabm
+                write(iout,*) "(0) Std Galerkin (1) GGLS (2) SUPG (3) CAU:",scalar_%stabm
                 write(iout,*)
                 write(*,*) "Numerical method:"
-                write(*,*) "(0) Standard Galerkin (1) GGLS:",scalar_%stabm
+                write(*,*) "(0) Std Galerkin (1) GGLS (2) SUPG (3) CAU:",scalar_%stabm
                 write(*,*)
 
                 ! Reads mesh input file case name

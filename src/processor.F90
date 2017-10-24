@@ -17,7 +17,7 @@
                 use scalarStructure
                 use mscalar,    only: localElem, localElem2D
                 use mscalar,    only: fracElem
-                use mscalar,    only: stabGGLS
+                use mscalar,    only: stabGGLS, stabSUPG
 
                 implicit none
 
@@ -36,6 +36,7 @@
                     call localElem2D(mesh_, scalar_, nel)
                     endif
                     if (scalar_%stabm .eq. 1) call stabGGLS(mesh_,scalar_,nel)
+                    if (scalar_%stabm .eq. 2) call stabSUPG(mesh_,scalar_,nel)
                     call assmb(mesh_, scalar_, nel)
 
                 enddo
