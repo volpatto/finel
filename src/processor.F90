@@ -17,7 +17,7 @@
                 use scalarStructure
                 use mscalar,    only: localElem, localElem2D
                 use mscalar,    only: fracElem
-                use mscalar,    only: stabGGLS, stabSUPG
+                use mscalar,    only: stabGGLS, stabSUPG, stabCAU
 
                 implicit none
 
@@ -30,13 +30,15 @@
 
                     if (mesh_%nsd==1) then
                     call localElem(mesh_, scalar_, nel)
-                    !call localElemGGLS(mesh_, scalar_, nel)
-                    !call fracElem(mesh_, scalar_, nel, t)
                     else
                     call localElem2D(mesh_, scalar_, nel)
                     endif
                     if (scalar_%stabm .eq. 1) call stabGGLS(mesh_,scalar_,nel)
                     if (scalar_%stabm .eq. 2) call stabSUPG(mesh_,scalar_,nel)
+                    if (scalar_%stabm .eq. 3) then 
+                        call stabSUPG(mesh_,scalar_,nel)
+                        call stabCAU(mesh_,scalar_,nel)
+                    endif
                     call assmb(mesh_, scalar_, nel)
 
                 enddo
@@ -336,12 +338,36 @@
                 ! Adaptative Picard method parameters initial values
                 omega = 1.0d0
                 omega_min = 0.5d0
-                alpha = 0.9d0
+                alpha = 0.1d0
                 rho = 0.7d0
-                eps = 1.d-5
+                eps = 5.d-3
 
                 flagit = .false.
-                scalar_%u_prev_it = scalar_%u_prev
+                if (scalar_%transient .eq. 1) scalar_%u_prev_it = scalar_%u_prev
+                if (scalar_%transient .eq. 0) scalar_%u_prev_it = scalar_%u
+                if ((scalar_%transient .eq. 0).and.(scalar_%stabm.eq.3)) then
+                    j = 0
+                    write(iout,4444) "***** Picard iteration",j,"*****"
+                    write(*,4444) "***** Picard iteration",j,"*****"
+                    
+                    call cpu_time(t1)
+                    call formKF(mesh_, scalar_,t)
+                    call applybc(mesh_, scalar_)
+                    call cpu_time(t2)
+                    write(iout,*) "Time elapsed (s) to mount system Ku=F:", (t2-t1)
+                    write(*,*) "Time elapsed (s) to mount system Ku=F:", (t2-t1)
+                    
+                    call cpu_time(t1)
+                    call solver(mesh_, scalar_)
+                    call cpu_time(t2)
+                    write(iout,*) "Time elapsed (s) to solve system Ku=F:", (t2-t1)
+                    write(*,*) "Time elapsed (s) to solve system Ku=F:", (t2-t1)
+                    ! Check if iteration converged
+                    call check_conv(scalar_%u,scalar_%u_prev_it,mesh_%nnodes, &
+                                eps, delta, flagit)
+                    write(*,5555) "Relative error: ", delta
+                    write(iout,5555) "Relative error: ", delta
+                endif!; stop
 
                 j = 0
                 do while ((j.le.niter) .and. (flagit .eqv. .false.))
@@ -390,7 +416,7 @@
                 ! ********************************************************
 
                 ! Clear K and F to reassemble in next iteration
-                scalar_%lhsys = 0.d0; scalar_%rhsys = 0.d0;
+                scalar_%lhsys = 0.d0; scalar_%rhsys = 0.d0!; stop
 
                 write(iout,*)
                 write(*,*)

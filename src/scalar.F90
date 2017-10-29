@@ -430,9 +430,8 @@
                     integer :: inodes(mesh_%nen)
                     real*8 :: xnodes(mesh_%nsd,mesh_%nen)
 
-                    ! Stabilizing GGLS variables
-                    real*8 :: alpha, epst, tau, dxf, h
-                    real*8 :: m_k, v_norm2, Pe_k, eps_k, tau_k
+                    ! Stabilizing SUPG variables
+                    real*8 :: m_k, v_norm2, Pe_k, eps_k, tau_k, h
 
                     pi = 4.0d0*datan(1.0d0)
 
@@ -497,7 +496,6 @@
                     do l=1,mesh_%nintp
                         xl = x1+(1.d0+xi(l,mesh_%nintp))*dx
                         xf = xl
-                        dxf = 1.d0
                         call shpf1d(xi(l,mesh_%nintp),mesh_%nen,psi,dpsi)
                         fac = w(l,mesh_%nintp)*dx
                         ! Compute load vector - rhs
@@ -505,7 +503,7 @@
                             ! SUPG
                             ! Linear
                             scalar_%rhelem(i) = scalar_%rhelem(i)+ &
-                                tau_k*xc*dpsi(i)/dx*fac
+                                tau_k*xc*xf*dpsi(i)/dx*fac
                             if (mesh_%geokind .eq. "radial") then
                             scalar_%rhelem(i)=scalar_%rhelem(i)*xl
                             endif
@@ -574,6 +572,238 @@
 1234            format(1(1x,(a),1x,(i0)),4(1x,(a),1x,(f0.5)))
                 end subroutine
                 
+                !> Computes stabilizing CAU terms to add in SUPG stabilizing.
+                !! @param mesh_    [in/out] A mesh structure
+                !! @param scalar_  [in/out] A scalar structure
+                !! @param nel      [in] Index of current element
+                !! @author Diego Volpatto
+                subroutine stabCAU(mesh_, scalar_, nel)
+
+                    use mshapeFunctions, only: xi, w, shpf1d
+                    use mshapeFunctions, only: xit, xiq, wt, wq, shpf2d
+                    use meshStructure
+                    use scalarStructure
+                    use mUtilities, only: hk3_2d
+
+                    implicit none
+
+                    !integer :: n, ni, mat
+                    type(mesh) :: mesh_
+                    type(scalarStructureSystem) :: scalar_
+                    integer :: nel
+
+                    real*8 :: dpsi2(mesh_%nsd,mesh_%nen)
+                    real*8 :: dxds(2,2), dsdx(2,2), detJ
+                    real*8 :: dpsix(mesh_%nen), dpsiy(mesh_%nen)
+                    real*8, allocatable :: xi2(:,:), w2(:)
+                    real*8 :: psi(mesh_%nen), dpsi(mesh_%nen), xl, dx
+                    real*8 :: x1, x2, xl2(mesh_%nsd)
+
+                    real*8 :: xk, xb, xc, v(2), xf, pi, fac
+                    integer :: i, j, l, i1, i2, k
+                    integer :: inodes(mesh_%nen)
+                    real*8 :: xnodes(mesh_%nsd,mesh_%nen)
+                    real*8 :: graduu, graduux, graduuy, uu, fuu
+
+                    ! Stabilizing CAU variables
+                    real*8 :: h, Res_phi, len_uv, len_grad, taup_s, eps_p, Pe_p, inner_ugrad
+                    real*8 :: m_k, v_norm2, Pe_k, eps_k, tau_k, tau_c, p_order, alpha_c
+                    real*8, parameter :: zero=1.d-30
+
+                    pi = 4.0d0*datan(1.0d0)
+
+                    xk = scalar_%mat(mesh_%mat(nel),1); !print*, xk
+                    xb = scalar_%mat(mesh_%mat(nel),2); !print*, xb
+                    if (mesh_%nsd .eq. 1) xc = scalar_%mat(mesh_%mat(nel),3); !print*, xc
+                    if (mesh_%nsd .eq. 2) then
+                        v(1) = scalar_%mat(mesh_%mat(nel),3); !print*, xc
+                        v(2) = scalar_%mat(mesh_%mat(nel),4); !print*, xc
+                    endif
+                    xf = 0.0
+
+                    if (mesh_%nsd .eq. 1) then
+
+                    inodes=mesh_%gnode(nel,:)+1; !print*, inodes;
+                    x1 = mesh_%x(1,inodes(1)); !print*, "x1=", x1
+                    x2 = mesh_%x(1,inodes(2)); !print*,"x2=", x2
+
+                    dx = (x2-x1)/2.d0; !print*, "dx =", dx;stop
+                    h = 2.d0*dx
+
+                    else
+                    ! Setting global nodes vector to local
+                    inodes=mesh_%gnode(nel,:); !print*, inodes;
+                    if (mesh_%meshgen .eq. "easymesh") inodes=inodes+1 
+                    do i=1,mesh_%nsd
+                    do j=1,mesh_%nen
+                    xnodes(i,j) = mesh_%x(i,inodes(j))
+                    enddo
+                    enddo
+
+                    call hk3_2d(xnodes,h)
+
+                    ! Setting quadrature points and weights due to
+                    ! element geometry
+                    if (mesh_%nen==3 .or. mesh_%nen==6) then 
+                        allocate(xi2(2,4)); xi2=xit; 
+                        allocate(w2(4)); w2=wt; 
+                    endif
+                    if (mesh_%nen==4 .or. mesh_%nen==8 .or.mesh_%nen==9) then 
+                        allocate(xi2(2,9)); xi2=xiq; 
+                        allocate(w2(9)); w2=wq; 
+                    endif
+                    endif
+
+                    ! Initialize element arrays
+                    psi = 0.0d0; dpsi = 0.d0; dpsi2 = 0.d0
+
+                    ! Stabilizing mesh parameters
+                    v_norm2 = norm2(v) 
+                    m_k = 1.d0/3.d0 ! For linear element
+                    Pe_k = m_k*v_norm2*h/(2.d0*xk)
+                    if (Pe_k .ge. 1) then
+                        eps_k = 1.d0
+                    else
+                        eps_k = Pe_k
+                    endif
+                    tau_k = h*eps_k/(2.d0*v_norm2)
+
+                    if (mesh_%nsd .eq. 1) then
+                    ! Begin integration loop
+                    do l=1,mesh_%nintp
+                        xl = x1+(1.d0+xi(l,mesh_%nintp))*dx
+                        xf = xl
+                        call shpf1d(xi(l,mesh_%nintp),mesh_%nen,psi,dpsi)
+                        fac = w(l,mesh_%nintp)*dx
+                        ! Compute previous iteration contribution
+                        graduu = 0.d0
+                        Res_phi = 0.d0
+                        do i=1,mesh_%nen
+                        graduu=graduu+dpsi(i)*scalar_%u_prev_it(inodes(i))
+                        Res_phi = Res_phi + & 
+                            xb*psi(i)*scalar_%u_prev_it(inodes(i))+ &
+                            xc*dpsi(i)*scalar_%u_prev_it(inodes(i)) - & 
+                            xf*psi(i)
+                        enddo
+                        if (graduu.lt.zero) goto 100
+                        len_uv = dabs(Res_phi)/dabs(graduu)
+                        if (len_uv.ge.dabs(xc)) then
+                            tau_c = 0.d0
+                        else
+                            tau_c = tau_k*(dabs(xc)/len_uv-1.d0)
+                        endif
+                        ! Compute load vector - rhs
+                        do i=1,mesh_%nen
+                            ! Compute stiffness matrix - lhs    
+                            do j=1,mesh_%nen
+                               ! CAU
+                               ! Linear Element
+                                scalar_%lhelem(i,j) = scalar_%lhelem(i,j) + &
+                                    (tau_c*len_uv**2.d0*dpsi(j)*dpsi(i)/dx/dx)*fac
+                            enddo
+                        enddo
+                    enddo
+                else
+                    ! Begin integration loop
+                    do l=1,mesh_%nintp
+                        ! Gauss point to integrate source/sink term
+                        do i=1,mesh_%nsd
+                        xl2(i)=xi2(i,l)
+                        enddo
+                        call shpf2d(xi2(mesh_%nsd,l),mesh_%nen,psi,dpsi2)
+                        ! Calculate DXDS
+                        do i=1,2
+                        do j=1,2
+                        dxds(i,j) = 0.0d0
+                        do k=1,mesh_%nen
+                            dxds(i,j) = dxds(i,j)+dpsi2(j,k)*xnodes(i,k)
+                        enddo
+                        enddo
+                        enddo
+                        ! Calculate DSDX
+                        detJ = dxds(1,1)*dxds(2,2)-dxds(1,2)*dxds(2,1)
+                        if (detJ .le. 0.0d0) then
+                            print*, "Bad Jacobian =", detJ; stop
+                        endif
+                        dsdx(1,1)=dxds(2,2)/detJ
+                        dsdx(2,2)=dxds(1,1)/detJ
+                        dsdx(1,2)=-dxds(1,2)/detJ
+                        dsdx(2,1)=-dxds(2,1)/detJ
+                        ! Calculate d(psi)/dx
+                        do i=1,mesh_%nen
+                        dpsix(i)=dpsi2(1,i)*dsdx(1,1)+dpsi2(2,i)*dsdx(2,1)
+                        dpsiy(i)=dpsi2(1,i)*dsdx(1,2)+dpsi2(2,i)*dsdx(2,2)
+                        enddo
+                        ! Accumulate integration point values of integrals
+                        fac=detJ*w2(l)
+                        xf=1.d0
+                        ! Compute previous iteration contribution
+                        uu = 0.d0
+                        graduux = 0.d0
+                        graduuy = 0.d0
+                        fuu = 0.d0
+                        do i=1,mesh_%nen
+                        uu=uu+psi(i)*scalar_%u_prev_it(inodes(i))
+                        fuu=fuu+psi(i)*xf
+                        graduux=graduux+dpsix(i)*scalar_%u_prev_it(inodes(i))
+                        graduuy=graduuy+dpsiy(i)*scalar_%u_prev_it(inodes(i))
+                        Res_phi = Res_phi + & 
+                            xb*psi(i)*scalar_%u_prev_it(inodes(i))+ &
+                            (v(1)*dpsix(i)*scalar_%u_prev_it(inodes(i))+&
+                            v(2)*dpsiy(i)*scalar_%u_prev_it(inodes(i)))*& 
+                            scalar_%u_prev_it(inodes(i)) - & 
+                            xf*psi(i)
+                        enddo
+                        len_grad = dsqrt(graduux**2.d0+graduuy**2.d0)
+                        if (len_grad.lt.zero) goto 100
+                        Res_phi = xb*uu + &
+                            (v(1)*graduux + v(2)*graduuy) - fuu
+                        len_uv = dabs(Res_phi)/len_grad
+                        ! ************** Stabilizing parameter *******************
+                        p_order = 1.d0
+                        Pe_p = v_norm2/(2.d0*xk*p_order)*h
+                        if ((1.d0-1/Pe_p).lt.zero) then
+                            eps_p = 0.d0
+                        else
+                            eps_p = 1.d0-1.d0/Pe_p
+                        endif
+                        taup_s = h*eps_p/(2.d0*v_norm2*p_order)
+                        inner_ugrad = v(1)*graduux + v(2)*graduuy
+                        if (inner_ugrad/Res_phi.lt.1.d0) then
+                           alpha_c = 1.d0
+                        else
+                           alpha_c = inner_ugrad/Res_phi
+                        endif
+                        !if (len_uv.ge.v_norm2) then
+                            !tau_c = 0.d0
+                        !else
+                            !tau_c = taup_s*(v_norm2/len_uv-1.d0)
+                        !endif
+                        if ((v_norm2/len_uv-alpha_c).lt.zero) then
+                            tau_c = 0.d0
+                        else
+                            tau_c = taup_s*(v_norm2/len_uv-alpha_c)
+                        endif
+                        ! *******************************************************
+                        !write(*,*) "Res_phi =", Res_phi
+                        !write(*,*) "len_grad =", len_grad
+                        !write(*,*) "len_uv =", len_uv
+                        !write(*,*) "tau_c =", tau_c
+                        ! Compute load vector - rhs
+                        do i=1,mesh_%nen
+                        ! Compute stiffness matrix - lhs
+                        do j=1,mesh_%nen
+                        scalar_%lhelem(i,j)=scalar_%lhelem(i,j)+ &
+                            (fac*tau_c*len_uv**2.d0)*(dpsix(j)*dpsix(i)+dpsiy(j)+dpsiy(i))
+                        enddo
+                        enddo
+                    enddo
+                    deallocate(xi2); deallocate(w2)
+100             endif
+
+1234            format(1(1x,(a),1x,(i0)),4(1x,(a),1x,(f0.5)))
+                end subroutine
+
                 !> Computes stabilizing GGLS terms.
                 !! @param mesh_    [in/out] A mesh structure
                 !! @param scalar_  [in/out] A scalar structure
