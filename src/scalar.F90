@@ -202,7 +202,7 @@
                         ! Calculate DSDX
                         detJ = dxds(1,1)*dxds(2,2)-dxds(1,2)*dxds(2,1)
                         if (detJ .le. 0.0d0) then
-                            print*, "Bad Jacobian =", detJ, "Elem =",nel; stop
+                            !print*, "Bad Jacobian =", detJ, "Elem =",nel; stop
                         endif
                         dsdx(1,1)=dxds(2,2)/detJ
                         dsdx(2,2)=dxds(1,1)/detJ
@@ -540,7 +540,7 @@
                         ! Calculate DSDX
                         detJ = dxds(1,1)*dxds(2,2)-dxds(1,2)*dxds(2,1)
                         if (detJ .le. 0.0d0) then
-                            print*, "Bad Jacobian =", detJ; stop
+                            !print*, "Bad Jacobian =", detJ; stop
                         endif
                         dsdx(1,1)=dxds(2,2)/detJ
                         dsdx(2,2)=dxds(1,1)/detJ
@@ -723,7 +723,7 @@
                         ! Calculate DSDX
                         detJ = dxds(1,1)*dxds(2,2)-dxds(1,2)*dxds(2,1)
                         if (detJ .le. 0.0d0) then
-                            print*, "Bad Jacobian =", detJ; stop
+                            !print*, "Bad Jacobian =", detJ; stop
                         endif
                         dsdx(1,1)=dxds(2,2)/detJ
                         dsdx(2,2)=dxds(1,1)/detJ
@@ -747,28 +747,27 @@
                         fuu=fuu+psi(i)*xf
                         graduux=graduux+dpsix(i)*scalar_%u_prev_it(inodes(i))
                         graduuy=graduuy+dpsiy(i)*scalar_%u_prev_it(inodes(i))
-                        Res_phi = Res_phi + & 
-                            xb*psi(i)*scalar_%u_prev_it(inodes(i))+ &
-                            (v(1)*dpsix(i)*scalar_%u_prev_it(inodes(i))+&
-                            v(2)*dpsiy(i)*scalar_%u_prev_it(inodes(i)))*& 
-                            scalar_%u_prev_it(inodes(i)) - & 
-                            xf*psi(i)
+                        !Res_phi = Res_phi + & 
+                            !xb*psi(i)*scalar_%u_prev_it(inodes(i))+ &
+                            !(v(1)*dpsix(i)*scalar_%u_prev_it(inodes(i))+&
+                            !v(2)*dpsiy(i)*scalar_%u_prev_it(inodes(i)))*& 
+                            !scalar_%u_prev_it(inodes(i)) - & 
+                            !xf*psi(i)
                         enddo
                         len_grad = dsqrt(graduux**2.d0+graduuy**2.d0)
                         if (len_grad.lt.zero) goto 100
-                        Res_phi = xb*uu + &
-                            (v(1)*graduux + v(2)*graduuy) - fuu
+                        inner_ugrad = v(1)*graduux + v(2)*graduuy
+                        Res_phi = xb*uu + inner_ugrad - fuu
                         len_uv = dabs(Res_phi)/len_grad
                         ! ************** Stabilizing parameter *******************
                         p_order = 1.d0
                         Pe_p = v_norm2/(2.d0*xk*p_order)*h
-                        if ((1.d0-1/Pe_p).lt.zero) then
+                        if ((1.d0-1.d0/Pe_p).lt.zero) then
                             eps_p = 0.d0
                         else
                             eps_p = 1.d0-1.d0/Pe_p
                         endif
                         taup_s = h*eps_p/(2.d0*v_norm2*p_order)
-                        inner_ugrad = v(1)*graduux + v(2)*graduuy
                         if (inner_ugrad/Res_phi.lt.1.d0) then
                            alpha_c = 1.d0
                         else

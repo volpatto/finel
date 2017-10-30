@@ -336,11 +336,11 @@
                 ! iteration.
 
                 ! Adaptative Picard method parameters initial values
-                omega = 1.0d0
+                omega = 0.5d0
                 omega_min = 0.5d0
                 alpha = 0.1d0
                 rho = 0.7d0
-                eps = 5.d-3
+                eps = 1.d-3
 
                 flagit = .false.
                 if (scalar_%transient .eq. 1) scalar_%u_prev_it = scalar_%u_prev
@@ -397,7 +397,7 @@
                 ! ********************************************************
 
                 ! Compute underrelaxation factor
-                call factor_picard(alpha, delta, eps, omega_min, omega)
+                !call factor_picard(alpha, delta, eps, omega_min, omega)
 
                 ! Update previous iteration with underrelaxation factor
                 write(*,5555) "Picard underrelaxation factor: ", omega
@@ -407,8 +407,8 @@
                 scalar_%u_prev_it = omega*scalar_%u+(1.d0-omega)*scalar_%u_prev_it
 
                 ! Rescaling shape factor for underrelaxation
-                call scaling_picard(i, delta, deltap, eps, rho,&
-                    omega, omega_min, alpha)
+                !call scaling_picard(i, delta, deltap, eps, rho,&
+                    !omega, omega_min, alpha)
 
                 ! Update relative error
                 deltap = delta

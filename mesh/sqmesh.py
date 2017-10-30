@@ -117,7 +117,10 @@ bcdata = fread(filename, "boundaries", "float")
 x_pts = np.linspace(xdata[0][0],xdata[0][1],xdata[0][2]+1)
 y_pts = np.linspace(ydata[0][0],ydata[0][1],ydata[0][2]+1)
 nnodes = len(x_pts)*len(y_pts)
-nelem = xdata[0][2]*ydata[0][2]
+Nx = int(xdata[0][2])
+Ny = int(ydata[0][2])
+nelem = Nx*Ny
+mat = 1
 #print bcdata, bcdata[1][1]
 #xx, yy = np.meshgrid(x_pts,y_pts)
 
@@ -125,20 +128,21 @@ nelem = xdata[0][2]*ydata[0][2]
 node = open('usquare.n','wt')
 print >>node, nnodes
 #for i in range(nelem):
-for j in range(int(ydata[0][2])+1):
-    for i in range(int(xdata[0][2])+1):
-        e = i + j*int(xdata[0][2])
+for j in range(Ny+1):
+    for i in range(Nx+1):
+        e = i + j*(Nx+1)
         print >>node, str(e)+':', x_pts[i], y_pts[j], getboundary(x_pts[i],y_pts[j],bcdata)
 node.close()
-sys.exit()
 
 # Element file
-elem = open('case1.e','wt')
-print >>elem, nelem-1
-for i in range(nelem-1):
-    if (i<nelem-2):
-        nn = i + 1
-    else:
-        nn = -1
-    print >>elem, str(i)+':', i, i+1, -1, i-1, nn, -1, -1, -1, -1, (x[i]+x[i+1])/2.0, 0.0, int(mat[i])
+elem = open('usquare.e','wt')
+print >>elem, nelem
+#for i in range(nelem-1):
+for j in range(Ny+1):
+    for i in range(Nx+1):
+        e = i + j*(Nx-1)
+        print >>elem, str(e)+':', e, e+1, e+Nx+1, e+Nx,-1, -1, -1, -1, -1, -1, -1, -1, 1
+        #print >>elem, str(e)+':', e+1, e+Nx+2, e+Nx+1, e, -1, -1, -1, -1, -1, -1, -1, -1, 1
+        #print >>elem, str(e)+':', e, e+1, e+Nx+1, e+Nx+2,-1, -1, -1, -1, -1, -1, -1, -1, 1
 elem.close()
+sys.exit()

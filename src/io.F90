@@ -119,6 +119,7 @@
 
                 if (mesh_%meshgen .eq. "easymesh") then
                 do i=1,mesh_%nelems
+                    if (mesh_%nen.eq.3) then
                     read(100,*) elem, & 
                         mesh_%gnode(i,1), mesh_%gnode(i,2), mesh_%gnode(i,3), &
                         mesh_%ei(i), mesh_%ej(i), mesh_%ek(i), & 
@@ -127,6 +128,17 @@
                     write(ioute,*) i, & 
                         mesh_%gnode(i,1), mesh_%gnode(i,2), mesh_%gnode(i,3), &
                     mesh_%xV(i), mesh_%yV(i), mesh_%mat(i)
+                    endif
+                    if (mesh_%nen.eq.4) then
+                    read(100,*) elem, & 
+                        mesh_%gnode(i,1), mesh_%gnode(i,2), mesh_%gnode(i,3), mesh_%gnode(i,4), &
+                        mesh_%ei(i), mesh_%ej(i), mesh_%ek(i), & 
+                        mesh_%si(i), mesh_%sj(i), mesh_%sk(i), &
+                        mesh_%xV(i), mesh_%yV(i), mesh_%mat(i)
+                    write(ioute,*) i, & 
+                        mesh_%gnode(i,1), mesh_%gnode(i,2), mesh_%gnode(i,3), mesh_%gnode(i,4), &
+                    mesh_%xV(i), mesh_%yV(i), mesh_%mat(i)
+                    endif
                 enddo
 
                 else if (mesh_%meshgen .eq. "triangle") then
@@ -312,13 +324,15 @@
                 do i=1,mesh_%nelems
                 inodes=mesh_%gnode(i,:); !print*, inodes;
                 if (mesh_%meshgen .eq. "triangle") inodes=inodes-1
-                write(isolvtk,1000) mesh_%nen, (inodes(j),j=1,mesh_%nen)
+                if (mesh_%nen.eq.3) write(isolvtk,1000) mesh_%nen, (inodes(j),j=1,mesh_%nen)
+                if (mesh_%nen.eq.4) write(isolvtk,4000) mesh_%nen, (inodes(j),j=1,mesh_%nen)
                 enddo
                 write(isolvtk,*) 
                 write(tempstr,'(i0)') mesh_%nelems
                 write(isolvtk,'(a)') "CELL_TYPES "//trim(tempstr)
                 do i=1,mesh_%nelems
-                write(isolvtk,'(i0)') 5 
+                if(mesh_%nen.eq.3) write(isolvtk,'(i0)') 5 
+                if(mesh_%nen.eq.4) write(isolvtk,'(i0)') 9 
                 enddo
                 write(isolvtk,*) 
                 write(tempstr,'(i0)') mesh_%nnodes
@@ -332,6 +346,7 @@
                 enddo
                 close(isolvtk)
 1000            format(4(i0,1x))
+4000            format(5(i0,1x))
 2000            format(3(f13.10,1x))
 3000            format(1(f12.10))
 
