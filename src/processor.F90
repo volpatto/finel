@@ -233,15 +233,16 @@
 
                 use meshStructure
                 use scalarStructure
-                use msolver, only: tri, rhsub
+                use msolver!, only: tri, rhsub
 
                 implicit none
 
                 type(mesh) :: mesh_
                 type(scalarStructureSystem) :: scalar_
 
-                call tri(scalar_%lhsys,mesh_%nnodes);
-                call rhsub(scalar_%lhsys,scalar_%u,scalar_%rhsys,mesh_%nnodes)
+                !call tri(scalar_%lhsys,mesh_%nnodes);
+                !call rhsub(scalar_%lhsys,scalar_%u,scalar_%rhsys,mesh_%nnodes)
+                call solverSOR(scalar_%lhsys,scalar_%rhsys,scalar_%u)
 
             endsubroutine
 
@@ -337,16 +338,16 @@
 
                 ! Adaptative Picard method parameters initial values
                 omega = 0.5d0
-                omega_min = 0.5d0
+                omega_min = 0.1d0
                 alpha = 0.1d0
                 rho = 0.7d0
                 eps = 1.d-3
 
                 flagit = .false.
+                j = 0
                 if (scalar_%transient .eq. 1) scalar_%u_prev_it = scalar_%u_prev
                 if (scalar_%transient .eq. 0) scalar_%u_prev_it = scalar_%u
                 if ((scalar_%transient .eq. 0).and.(scalar_%stabm.eq.3)) then
-                    j = 0
                     write(iout,4444) "***** Picard iteration",j,"*****"
                     write(*,4444) "***** Picard iteration",j,"*****"
                     
@@ -367,12 +368,15 @@
                                 eps, delta, flagit)
                     write(*,5555) "Relative error: ", delta
                     write(iout,5555) "Relative error: ", delta
+                    scalar_%u_prev_it = omega*scalar_%u+(1.d0-omega)*scalar_%u_prev_it!; stop
+                    ! Clear K and F to reassemble in next iteration
+                    scalar_%lhsys = 0.d0; scalar_%rhsys = 0.d0!; stop
                 endif!; stop
 
-                j = 0
                 do while ((j.le.niter) .and. (flagit .eqv. .false.))
                 
                 j = j + 1
+                scalar_%u=0.d0
                 write(iout,4444) "***** Picard iteration",j,"*****"
                 write(*,4444) "***** Picard iteration",j,"*****"
                 

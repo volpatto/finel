@@ -175,7 +175,7 @@
                     !xc = scalar_%mat(mesh_%mat(nel),3); !print*, xc
                     v(1) = scalar_%mat(mesh_%mat(nel),3); !print*, v(1)
                     v(2) = scalar_%mat(mesh_%mat(nel),4); !print*, v(2)
-                    xf = 0.0d0
+                    xf = 1.0d0
 
                     ! Initialize element arrays
                     scalar_%lhelem = 0.0d0; scalar_%rhelem = 0.d0
@@ -216,7 +216,6 @@
                         ! Accumulate integration point values of integrals
                         fac=detJ*w(l)
                         !xf=dsin(pi*mesh_%xV(nel))*dsin(pi*mesh_%yV(nel))
-                        xf=1.d0
                         !xf=mesh_%yV(nel)
                         !print*, xf
                         if (scalar_%transient .eq. 0) then
@@ -442,7 +441,7 @@
                         v(1) = scalar_%mat(mesh_%mat(nel),3); !print*, xc
                         v(2) = scalar_%mat(mesh_%mat(nel),4); !print*, xc
                     endif
-                    xf = 0.0
+                    xf = 1.0
 
                     if (mesh_%nsd .eq. 1) then
 
@@ -553,7 +552,6 @@
                         enddo
                         ! Accumulate integration point values of integrals
                         fac=detJ*w2(l)
-                        xf=1.d0
                         ! Compute load vector - rhs
                         do i=1,mesh_%nen
                         scalar_%rhelem(i) = scalar_%rhelem(i)+ &
@@ -608,7 +606,7 @@
                     ! Stabilizing CAU variables
                     real*8 :: h, Res_phi, len_uv, len_grad, taup_s, eps_p, Pe_p, inner_ugrad
                     real*8 :: m_k, v_norm2, Pe_k, eps_k, tau_k, tau_c, p_order, alpha_c
-                    real*8, parameter :: zero=1.d-30
+                    real*8, parameter :: zero=1.d-8
 
                     pi = 4.0d0*datan(1.0d0)
 
@@ -619,7 +617,7 @@
                         v(1) = scalar_%mat(mesh_%mat(nel),3); !print*, xc
                         v(2) = scalar_%mat(mesh_%mat(nel),4); !print*, xc
                     endif
-                    xf = 0.0
+                    xf = 1.0
 
                     if (mesh_%nsd .eq. 1) then
 
@@ -672,7 +670,7 @@
                     ! Begin integration loop
                     do l=1,mesh_%nintp
                         xl = x1+(1.d0+xi(l,mesh_%nintp))*dx
-                        xf = xl
+                        !xf = xl
                         call shpf1d(xi(l,mesh_%nintp),mesh_%nen,psi,dpsi)
                         fac = w(l,mesh_%nintp)*dx
                         ! Compute previous iteration contribution
@@ -736,7 +734,6 @@
                         enddo
                         ! Accumulate integration point values of integrals
                         fac=detJ*w2(l)
-                        xf=1.d0
                         ! Compute previous iteration contribution
                         uu = 0.d0
                         graduux = 0.d0
@@ -755,17 +752,20 @@
                             !xf*psi(i)
                         enddo
                         len_grad = dsqrt(graduux**2.d0+graduuy**2.d0)
-                        if (len_grad.lt.zero) goto 100
                         inner_ugrad = v(1)*graduux + v(2)*graduuy
                         Res_phi = xb*uu + inner_ugrad - fuu
                         len_uv = dabs(Res_phi)/len_grad
+                        if ((len_grad.lt.zero).or.(len_uv.lt.zero)) goto 100
                         ! ************** Stabilizing parameter *******************
                         p_order = 1.d0
                         Pe_p = v_norm2/(2.d0*xk*p_order)*h
                         if ((1.d0-1.d0/Pe_p).lt.zero) then
                             eps_p = 0.d0
+                            !taup_s = 0.d0
+                            !print*, "Aqui"
                         else
                             eps_p = 1.d0-1.d0/Pe_p
+                            !taup_s = h*eps_p/(2.d0*v_norm2*p_order)
                         endif
                         taup_s = h*eps_p/(2.d0*v_norm2*p_order)
                         if (inner_ugrad/Res_phi.lt.1.d0) then
@@ -778,22 +778,30 @@
                         !else
                             !tau_c = taup_s*(v_norm2/len_uv-1.d0)
                         !endif
-                        if ((v_norm2/len_uv-alpha_c).lt.zero) then
+                        if ((v_norm2/len_uv-alpha_c).lt.0.d0) then
                             tau_c = 0.d0
                         else
                             tau_c = taup_s*(v_norm2/len_uv-alpha_c)
                         endif
                         ! *******************************************************
-                        !write(*,*) "Res_phi =", Res_phi
-                        !write(*,*) "len_grad =", len_grad
-                        !write(*,*) "len_uv =", len_uv
-                        !write(*,*) "tau_c =", tau_c
+                        if (isnan(tau_c)) then
+                            write(*,*) "Res_phi =", Res_phi
+                            write(*,*) "len_grad =", len_grad
+                            write(*,*) "inner_ugrad =", inner_ugrad
+                            write(*,*) "len_uv =", len_uv
+                            write(*,*) "tau_c =", tau_c
+                            write(*,*) "taup_s =", taup_s
+                            write(*,*) "h =", h
+                            write(*,*) "eps_p =", eps_p
+                            write(*,*) "v_norm2 =", v_norm2
+                            stop
+                        endif
                         ! Compute load vector - rhs
                         do i=1,mesh_%nen
                         ! Compute stiffness matrix - lhs
                         do j=1,mesh_%nen
                         scalar_%lhelem(i,j)=scalar_%lhelem(i,j)+ &
-                            (fac*tau_c*len_uv**2.d0)*(dpsix(j)*dpsix(i)+dpsiy(j)+dpsiy(i))
+                            fac*(tau_c*len_uv**2.d0)*(dpsix(j)*dpsix(i)+dpsiy(j)+dpsiy(i))
                         enddo
                         enddo
                     enddo

@@ -110,4 +110,153 @@
 		enddo
                 
             endsubroutine
+
+            subroutine solverJacobi(A, b, x, itol, ikmax)
+
+                implicit none
+
+                real*8, intent(inout) :: A(:,:), b(:)
+                real*8, allocatable, intent(out) :: x(:)
+                real*8, intent(in), optional :: itol
+                integer, optional :: ikmax
+                real*8, allocatable :: xprev(:)
+                real*8 :: tol = 1.d-10, summation
+                integer :: i, j, k, n, kmax = 2000
+
+                if (present(itol)) tol = itol
+                if (present(ikmax)) kmax = ikmax
+
+                if ((size(A(1,:)).ne.(size(A(:,1)))).or.(size(b).ne.size(A(1,:)))) then
+                    print*, "Invalid system Ax = b: Incompatibility of dimensions."
+                else
+                    n = size(b)
+                endif
+
+                allocate(x(n)); x = 0.d0
+                allocate(xprev(n)); xprev = b
+
+                !write(*,'(/(a)/)') "****************** Begin solver Jacobi ******************"
+                do k=1,kmax
+                    print*, "Iteration =", k
+                    do i=1,n
+                        summation = 0.d0
+                        do j=1,n
+                            if (i.ne.j) then 
+                                summation = summation + A(i,j)*xprev(j)
+                            endif
+                        enddo
+                        x(i) = (b(i)-summation)/A(i,i)
+                    enddo
+                    !if (norm2(x-xprev)/norm2(x).le.tol) then
+                    if (dabs(maxval(x-xprev))/dabs(maxval(x)).le.tol) then
+                        exit
+                    else
+                        xprev = x
+                    endif
+                enddo
+
+                write(*,'(1x,(a),2x,i0,2x,(a),2x,es10.2)') "Solver Jacobi iterations:",k,"tol =",tol
+                !write(*,'(/(a)/)') "****************** End solver Jacobi ******************"
+
+            endsubroutine
+
+            subroutine solverGS(A, b, x, itol, ikmax)
+
+                implicit none
+
+                real*8, intent(inout) :: A(:,:), b(:)
+                real*8, allocatable, intent(out) :: x(:)
+                real*8, intent(in), optional :: itol
+                integer, optional :: ikmax
+                real*8, allocatable :: xprev(:)
+                real*8 :: tol = 1.d-10, summation
+                integer :: i, j, k, n, kmax = 2000
+
+                if (present(itol)) tol = itol
+                if (present(ikmax)) kmax = ikmax
+
+                if ((size(A(1,:)).ne.(size(A(:,1)))).or.(size(b).ne.size(A(1,:)))) then
+                    print*, "Invalid system Ax = b: Incompatibility of dimensions."
+                else
+                    n = size(b)
+                endif
+
+                allocate(xprev(n)); xprev = b
+                allocate(x(n)); x = xprev
+
+                !write(*,'(/(a)/)') "****************** Begin solver Gauss-Seidel ******************"
+                do k=1,kmax
+                    !print*, "Iteration =", k
+                    do i=1,n
+                        summation = 0.d0
+                        do j=1,n
+                            if (i.ne.j) then 
+                                summation = summation + A(i,j)*x(j)
+                            endif
+                        enddo
+                        x(i) = (b(i)-summation)/A(i,i)
+                    enddo
+                    !if (norm2(x-xprev)/norm2(x).le.tol) then
+                    if (dabs(maxval(x-xprev))/dabs(maxval(x)).le.tol) then
+                        exit
+                    else
+                        xprev = x
+                    endif
+                enddo
+
+                write(*,'(1x,(a),2x,i0,2x,(a),2x,es10.2)') "Solver GS iterations:",k,"tol =",tol
+                !write(*,'(/(a)/)') "****************** End solver Gauss-Seidel ******************"
+
+            endsubroutine
+
+            subroutine solverSOR(A, b, x, iomega, itol, ikmax)
+
+                implicit none
+
+                real*8, intent(inout) :: A(:,:), b(:)
+                real*8, allocatable, intent(out) :: x(:)
+                real*8, intent(in), optional :: itol, iomega
+                integer, optional :: ikmax
+                real*8, allocatable :: xprev(:)
+                real*8 :: tol = 1.d-10, summation, omega=1.2d0
+                integer :: i, j, k, n, kmax = 2000
+
+                if (present(itol)) tol = itol
+                if (present(ikmax)) kmax = ikmax
+                if (present(iomega)) omega = iomega
+
+                if ((size(A(1,:)).ne.(size(A(:,1)))).or.(size(b).ne.size(A(1,:)))) then
+                    print*, "Invalid system Ax = b: Incompatibility of dimensions."
+                else
+                    n = size(b)
+                endif
+
+                allocate(xprev(n)); xprev = b
+                allocate(x(n)); x = 0.d0
+
+                !write(*,'(/(a)/)') "****************** Begin solver SOR ******************"
+                do k=1,kmax
+                    !print*, "Iteration =", k
+                    do i=1,n
+                        summation = 0.d0
+                        do j=1,n
+                            if (i.ne.j) then 
+                                summation = summation + A(i,j)*x(j)
+                            endif
+                        enddo
+                        x(i) = (b(i)-summation)/A(i,i)
+                        x(i) = omega*x(i) + (1.d0-omega)*xprev(i)
+                    enddo
+                    !if (norm2(x-xprev)/norm2(x).le.tol) then
+                    if (dabs(maxval(x-xprev))/dabs(maxval(x)).le.tol) then
+                        exit
+                    else
+                        xprev = x
+                    endif
+                enddo
+                write(*,'(1x,(a),2x,i0,2x,(a),2x,es10.2)') "Solver SOR iterations:",k,"tol =",tol
+
+                !write(*,'(/(a)/)') "****************** End solver SOR ******************"
+
+            endsubroutine
         endmodule
