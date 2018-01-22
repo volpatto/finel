@@ -10,7 +10,13 @@ I present here my implementation of the Finite Element Method with Galerkin Appr
 * Element types available:
     * Linear, quadratic and cubic to 1D problems;
     * Linear triangles to 2D problems.
-* Linear, quadratic and cubic 1D element;
+* In-house numerical linear algebra solvers available:
+    * Jacobi;
+    * Gauss-Seidel;
+    * SOR;
+* Direct linear algebra solvers available:
+    * Gauss foward substitution with triangular superior reduction.
+* Picard method to solve nonlinear problems;
 * Writer result data to the following file extensions:
     * .dat;
     * .csv;
