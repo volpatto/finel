@@ -4,12 +4,25 @@ I present here my implementation of the Finite Element Method with Galerkin Appr
 
 ## Features
 
-* Modular Fortran programming;
+* Modular Fortran programming with modern features (f95 and f03);
 * Derived Data Structure;
-* General 1D stationary equation.
+* Reader for Triangle and EasyMesh mesh generators;
+* Element types available:
+    * Linear, quadratic and cubic to 1D problems;
+    * Linear triangles to 2D problems.
+* Linear, quadratic and cubic 1D element;
+* Writer result data to the following file extensions:
+    * .dat;
+    * .csv;
+    * .vtk.
+* General 1D/2D stationary ou transient advection-diffusion-reaction equation;
+* Stabilization methods:
+    * SUPG;
+    * GGLS;
+    * CAU (testing stage).
 
 ## Contact
 
-My name is Diego, but you can call me Volps. I'm a Doctoral Student at National Laboratory of Scientific Computing (LNCC/MCTIC, Brazil), sited in Petrópolis/RJ. Feel free to send me an e-mail: volpatto@lncc.br.
+My name is Diego, but you can call me Volps. I'm a Doctoral Student at National Laboratory for Scientific Computing (LNCC/MCTIC, Brazil), sited in Petrópolis/RJ. Feel free to send me an e-mail: volpatto@lncc.br.
 
-Greeting!
+Greetings!
