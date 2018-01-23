@@ -21,7 +21,7 @@ I present here my implementation of the Finite Element Method with Galerkin Appr
     * .dat;
     * .csv;
     * .vtk.
-* General 1D/2D stationary ou transient advection-diffusion-reaction equation;
+* General 1D/2D stationary or transient advection-diffusion-reaction equation;
 * Stabilization methods:
     * SUPG;
     * GGLS;
