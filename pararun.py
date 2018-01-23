@@ -76,7 +76,7 @@ try:
     # Activating a Render object from Active View
     render = pvs.Render()
     # Screenshot 
-    pvs.WriteImage('solution.png')
+    pvs.SaveScreenshot(target_dir +'/'+('%s.png' % casename[0:-1]),TransparentBackground=1,ImageQuality=100)
     # Display result in user's screen
     pvs.Interact()
 except:
